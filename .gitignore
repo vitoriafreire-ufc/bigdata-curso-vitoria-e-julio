@@ -1,3 +1,20 @@
+# datasets
+*.csv
+*.parquet
+
+#hive
+metastore_db/
+derby.log
+
+# cache Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# ambientes virtuais
+venv/
+bigdata-env/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
