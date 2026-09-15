@@ -1,0 +1,509 @@
+# Etapa 3 — Análise, Insights e Dashboard BI
+
+## 1. Objetivo da análise
+
+A etapa de análise tem como objetivo transformar os dados processados nas camadas Bronze, Silver e Gold em informações capazes de apoiar decisões de negócio da TechPay.
+
+O foco da análise foi compreender o comportamento das transações, identificar onde está concentrado o risco de fraude e fornecer uma visão operacional que permita acompanhar mudanças no perfil das transações e priorizar ações de prevenção.
+
+O dashboard desenvolvido a partir dessas análises foi concebido como um produto de BI para acompanhamento recorrente do risco transacional. Dessa forma, sua finalidade não é apenas apresentar indicadores, mas permitir que uma equipe responsável pelo risco identifique rapidamente situações relevantes e decida onde concentrar sua atenção.
+
+---
+
+# 2. Público-alvo do dashboard
+
+O principal público-alvo do dashboard é a **equipe de análise e gestão de risco da TechPay**, especialmente profissionais responsáveis pelo monitoramento de fraudes e pelo acompanhamento do comportamento das transações.
+
+O painel também pode ser utilizado pela **gestão/diretoria**, porém com uma finalidade diferente. Enquanto o analista de risco utilizaria o dashboard para investigar padrões e acompanhar mudanças, a gestão poderia utilizá-lo para acompanhar a evolução dos principais indicadores e avaliar se as estratégias de prevenção estão produzindo resultados.
+
+O painel não foi pensado como uma ferramenta principal para atendimento ao cliente. Embora informações de fraude possam eventualmente apoiar o atendimento, o nível de agregação utilizado no dashboard é direcionado à análise do negócio e não à consulta de uma transação individual.
+
+Assim, o produto possui como usuário principal:
+
+> **Analista/Gestor de Risco**
+
+e como usuário secundário:
+
+> **Gestão/Diretoria de operações e prevenção a fraudes.**
+
+---
+
+# 3. Decisão de negócio apoiada
+
+A principal decisão apoiada pelo dashboard é:
+
+> **Onde a TechPay deve concentrar seus esforços de prevenção e monitoramento de fraude?**
+
+A análise permite responder perguntas como:
+
+- Qual canal apresenta maior exposição a fraude?
+- Quais categorias de estabelecimento apresentam maior risco?
+- Qual segmento de cliente possui maior concentração de transações fraudulentas?
+- O risco está aumentando ou diminuindo ao longo do tempo?
+- Existem períodos que merecem maior atenção operacional?
+- O volume de transações recusadas está acompanhando o comportamento de fraude?
+- Onde medidas adicionais de prevenção poderiam gerar maior impacto?
+
+O dashboard, portanto, transforma os dados transacionais em uma visão de priorização.
+
+Em vez de tratar todas as transações da mesma maneira, a TechPay pode direcionar recursos de monitoramento, revisão de regras antifraude e investigação para os contextos em que o risco é mais relevante.
+
+---
+
+# 4. Principais achados da análise
+
+## 4.1. Taxa geral de fraude
+
+A base analisada possui aproximadamente **30.000 transações**, com uma taxa geral de fraude de **2,50%**.
+
+Esse indicador funciona como uma referência geral para interpretar os demais resultados.
+
+A taxa global, isoladamente, não mostra onde está o problema. Por isso, ela é utilizada como uma linha de base para comparação com canais, categorias, segmentos e períodos.
+
+### Insight de negócio
+
+A taxa geral de 2,50% representa o nível de fraude observado na carteira analisada. Entretanto, a análise segmentada mostra que esse risco não está distribuído de maneira uniforme.
+
+Isso significa que utilizar apenas a taxa global como indicador poderia esconder grupos com comportamento significativamente mais arriscado.
+
+### Implicação
+
+A TechPay deve utilizar o indicador global como referência, mas tomar decisões principalmente a partir da **segmentação do risco**.
+
+---
+
+# 4.2. Risco por canal
+
+A análise por canal apresentou diferenças importantes:
+
+| Canal | Taxa de fraude |
+|---|---:|
+| App | 3,79% |
+| ATM | 1,80% |
+| Web | 1,74% |
+| POS | 1,42% |
+
+O canal **App** apresenta a maior taxa de fraude, chegando a **3,79%**, enquanto o POS apresenta a menor, com **1,42%**.
+
+A taxa observada no App é significativamente superior à taxa geral da base.
+
+### Insight de negócio
+
+O canal App deve ser considerado um dos principais pontos de atenção para a estratégia antifraude da TechPay.
+
+O resultado pode indicar que determinadas características das transações realizadas pelo aplicativo possuem maior exposição ao risco ou que as regras atuais de prevenção são menos eficientes nesse contexto.
+
+O resultado não permite afirmar, sozinho, a causa da diferença. Porém, fornece uma evidência suficiente para justificar uma investigação mais aprofundada.
+
+### Decisão possível
+
+A equipe de risco poderia priorizar:
+
+- revisão das regras antifraude aplicadas ao App;
+- investigação de padrões específicos das transações móveis;
+- análise de horários, valores e categorias associados às fraudes no App;
+- avaliação da necessidade de mecanismos adicionais de autenticação ou validação.
+
+O objetivo não seria simplesmente bloquear mais transações no App, mas **reduzir fraude preservando o máximo possível das transações legítimas**.
+
+---
+
+# 4.3. Risco por categoria de estabelecimento
+
+A análise por categoria também apresentou diferenças relevantes:
+
+| Categoria | Taxa de fraude |
+|---|---:|
+| Viagem | 5,32% |
+| Saúde | 2,47% |
+| Alimentação | 2,31% |
+| Varejo | 2,24% |
+| Serviços | 1,97% |
+| Eletrônico | 1,96% |
+
+A categoria **Viagem** apresenta uma taxa de fraude de **5,32%**, sendo o maior índice entre as categorias analisadas.
+
+Esse valor é mais que o dobro da taxa geral de fraude da base.
+
+### Insight de negócio
+
+Transações relacionadas à categoria Viagem representam um ponto de risco especialmente relevante.
+
+Uma possível explicação de negócio é que transações desse tipo podem apresentar valores maiores, comportamento menos frequente ou características que tornam a identificação de comportamento legítimo mais difícil.
+
+Entretanto, o dashboard não deve transformar essa hipótese em uma conclusão causal. O resultado deve ser utilizado como sinal para investigação.
+
+### Decisão possível
+
+A equipe de risco pode avaliar a aplicação de regras específicas para essa categoria, considerando fatores como:
+
+- valor da transação;
+- comportamento histórico do cliente;
+- localização;
+- horário;
+- frequência de transações;
+- score de risco.
+
+A principal oportunidade é trabalhar com **regras contextualizadas**, em vez de utilizar exatamente o mesmo nível de controle para todas as categorias.
+
+---
+
+# 4.4. Risco por segmento de cliente
+
+Os dados também mostram uma diferença expressiva entre os segmentos:
+
+| Segmento | Taxa de fraude |
+|---|---:|
+| High-Risk | 9,67% |
+| Standard | 2,93% |
+| Premium | 0,95% |
+
+O segmento **High-Risk** apresenta taxa de fraude de **9,67%**, enquanto o segmento Premium apresenta apenas **0,95%**.
+
+Essa diferença é um dos achados mais relevantes da análise.
+
+### Insight de negócio
+
+O risco transacional está fortemente associado ao segmento de risco atribuído ao cliente.
+
+Isso indica que a TechPay pode utilizar essa informação para desenvolver uma estratégia de prevenção diferenciada.
+
+Clientes classificados como High-Risk poderiam receber maior nível de monitoramento, enquanto clientes de menor risco poderiam passar por uma experiência menos restritiva.
+
+### Decisão possível
+
+Esse resultado pode apoiar uma estratégia de **controle adaptativo de risco**, na qual o nível de fricção imposto ao cliente seja proporcional ao risco estimado.
+
+Por exemplo:
+
+- baixo risco → processamento mais fluido;
+- risco intermediário → validações adicionais quando necessário;
+- alto risco → maior nível de monitoramento ou validação.
+
+Isso pode ajudar a equilibrar dois objetivos que normalmente entram em conflito:
+
+> **reduzir fraude sem aumentar desnecessariamente a fricção para clientes legítimos.**
+
+---
+
+# 4.5. Análise temporal
+
+A tabela Gold de risco diário permite acompanhar a evolução das transações e dos indicadores de fraude ao longo do tempo.
+
+A análise temporal é importante porque uma taxa média pode esconder mudanças pontuais.
+
+Uma média de 2,50%, por exemplo, pode ser composta por períodos de comportamento normal e por dias com picos relevantes de fraude.
+
+### Insight de negócio
+
+O acompanhamento temporal permite transformar o dashboard em uma ferramenta de monitoramento, e não apenas em um relatório histórico.
+
+Um aumento repentino na taxa de fraude pode representar uma alteração no comportamento dos fraudadores, uma mudança operacional ou algum evento específico que merece investigação.
+
+### Decisão possível
+
+Caso seja identificado um pico de risco, a equipe responsável pode investigar:
+
+- quais canais contribuíram para o aumento;
+- quais categorias foram mais afetadas;
+- quais segmentos apresentaram maior participação;
+- se houve aumento de valores transacionados;
+- se houve aumento simultâneo de transações recusadas.
+
+Assim, o indicador temporal funciona como um mecanismo de **detecção de anomalias para investigação operacional**.
+
+---
+
+# 4.6. Relação entre fraude e transações recusadas
+
+As tabelas Gold também armazenam informações sobre transações recusadas.
+
+Esse indicador é relevante porque uma estratégia antifraude não deve ser avaliada somente pela quantidade de fraudes identificadas.
+
+Um volume muito elevado de recusas pode significar que o sistema está sendo excessivamente restritivo, afetando clientes legítimos.
+
+### Insight de negócio
+
+A taxa de transações recusadas funciona como um indicador complementar para avaliar o equilíbrio entre **segurança e experiência do cliente**.
+
+Por isso, a taxa de fraude e a taxa de recusa devem ser observadas em conjunto.
+
+Uma redução da fraude acompanhada por um aumento desproporcional das recusas pode indicar que uma regra antifraude está produzindo excesso de bloqueios.
+
+### Decisão possível
+
+A equipe de risco pode utilizar esses indicadores para avaliar ajustes nas regras antifraude, buscando o melhor equilíbrio entre:
+
+- prevenção de perdas;
+- redução de falsos positivos;
+- continuidade das transações legítimas;
+- experiência do cliente.
+
+---
+
+# 5. KPIs escolhidos
+
+O dashboard prioriza indicadores relacionados diretamente às decisões descritas acima.
+
+## 5.1. Total de transações
+
+Indica o volume da operação analisada.
+
+Esse KPI é importante porque a taxa de fraude precisa ser interpretada em conjunto com o volume.
+
+Uma categoria pode apresentar uma taxa elevada, mas representar poucas transações. Outra pode apresentar uma taxa menor, mas representar uma parcela muito maior da operação.
+
+---
+
+## 5.2. Valor total transacionado
+
+O valor financeiro das transações é utilizado para dimensionar a exposição econômica.
+
+Quantidade de fraudes e impacto financeiro não são necessariamente equivalentes.
+
+Uma pequena quantidade de transações fraudulentas de alto valor pode representar uma perda maior do que muitas fraudes de baixo valor.
+
+---
+
+## 5.3. Taxa de fraude
+
+É um dos principais KPIs do produto porque permite comparar diferentes dimensões da operação.
+
+A taxa de fraude é mais informativa do que simplesmente contar fraudes, pois considera o total de transações daquele contexto.
+
+Ela permite comparar, por exemplo, App contra POS ou Viagem contra Eletrônico.
+
+---
+
+## 5.4. Valor associado à fraude
+
+A quantidade de fraudes mostra frequência, enquanto o valor fraudado mostra impacto financeiro.
+
+Por isso, os dois indicadores são complementares.
+
+Uma área pode apresentar alta frequência de fraude, mas baixo impacto financeiro, enquanto outra pode apresentar poucas ocorrências de alto valor.
+
+---
+
+## 5.5. Score médio de risco
+
+O score médio ajuda a contextualizar o comportamento de risco observado.
+
+Ele permite acompanhar se grupos com maior incidência de fraude também apresentam maior nível de risco estimado.
+
+Esse indicador é especialmente útil para a análise por canal, categoria e segmento.
+
+---
+
+## 5.6. Taxa de transações recusadas
+
+A taxa de recusa foi escolhida como indicador complementar porque representa o custo operacional de uma estratégia de prevenção.
+
+O objetivo da área de risco não deve ser simplesmente maximizar recusas.
+
+O objetivo é identificar transações fraudulentas com o menor impacto possível sobre transações legítimas.
+
+---
+
+# 6. O que foi descartado como KPI principal
+
+Nem toda informação disponível na base precisa ocupar posição de destaque no dashboard.
+
+Algumas métricas foram mantidas fora do conjunto principal de KPIs porque possuem menor capacidade de apoiar diretamente uma decisão.
+
+## Identificadores de transação
+
+IDs são importantes para rastreabilidade e investigação individual, mas não são bons KPIs para uma visão gerencial agregada.
+
+Por isso, ficam fora do painel principal.
+
+## Informações cadastrais detalhadas
+
+Dados excessivamente granulares de cliente podem aumentar a complexidade do dashboard sem necessariamente melhorar a decisão que ele pretende apoiar.
+
+Como o objetivo é identificar padrões de risco, foi priorizada a agregação por dimensões relevantes para o negócio.
+
+## Métricas puramente técnicas do pipeline
+
+Tempo de execução, quantidade de arquivos Parquet ou características internas do processamento são importantes para avaliar a solução Big Data, mas não são indicadores de negócio do produto de BI.
+
+Essas informações pertencem à avaliação técnica da Etapa 2, e não ao painel utilizado pela área de risco.
+
+## Excesso de KPIs
+
+Também foi evitada a inclusão de muitos indicadores simultaneamente.
+
+Um dashboard com grande quantidade de KPIs pode dificultar a identificação do que realmente exige atenção.
+
+A seleção foi feita considerando uma pergunta principal:
+
+> **"Esse indicador ajuda o responsável pelo risco a decidir onde investigar ou agir?"**
+
+Quando a resposta é negativa, o indicador não recebe destaque no dashboard.
+
+---
+
+# 7. O dashboard como produto de BI
+
+O dashboard foi concebido como um produto de acompanhamento contínuo do risco da TechPay.
+
+Ele possui quatro funções principais.
+
+## Visão executiva
+
+A primeira função é permitir que o usuário compreenda rapidamente a situação geral da operação.
+
+Os principais KPIs apresentam o tamanho da operação, exposição financeira, ocorrência de fraude e comportamento das recusas.
+
+A intenção é que o usuário consiga responder rapidamente:
+
+> "Como está o risco da operação?"
+
+---
+
+## Monitoramento
+
+A segunda função é acompanhar a evolução do comportamento ao longo do tempo.
+
+O usuário pode identificar mudanças e possíveis picos de risco que justificam uma investigação.
+
+Nesse contexto, o dashboard deixa de ser apenas um relatório e passa a funcionar como uma ferramenta de acompanhamento recorrente.
+
+---
+
+## Comparação
+
+A terceira função é permitir comparar diferentes dimensões da operação.
+
+O usuário pode observar diferenças entre:
+
+- canais;
+- categorias;
+- níveis de risco;
+- períodos.
+
+Isso permite identificar quais grupos apresentam comportamento fora do padrão geral.
+
+---
+
+## Priorização
+
+A quarta função é transformar os resultados em prioridade operacional.
+
+O dashboard não determina automaticamente qual regra antifraude deve ser criada ou alterada.
+
+Ele fornece evidências para que a equipe responsável decida:
+
+- onde investigar;
+- quais segmentos precisam de atenção;
+- quais regras podem precisar de revisão;
+- onde existe risco financeiro relevante;
+- onde existe possibilidade de excesso de bloqueios.
+
+Assim, o produto funciona como uma camada entre os dados e a tomada de decisão.
+
+---
+
+# 8. Experiência de uso
+
+O painel foi estruturado para permitir uma leitura progressiva.
+
+Primeiro, o usuário observa os indicadores gerais.
+
+Depois, pode analisar a evolução temporal e comparar diferentes dimensões da operação.
+
+Por fim, pode aprofundar a análise por categoria e outros recortes disponíveis.
+
+Essa organização evita que o usuário precise interpretar todos os dados simultaneamente.
+
+O princípio adotado é:
+
+> **visão geral → identificação do problema → segmentação → investigação → decisão.**
+
+Os filtros disponíveis também permitem alterar o contexto da análise sem precisar gerar um novo relatório.
+
+Isso torna o dashboard mais adequado ao uso recorrente por uma equipe de risco.
+
+---
+
+# 9. Quem é o dono do dashboard?
+
+O responsável pelo painel seria idealmente o **gestor da área de Risco/Fraude da TechPay**.
+
+Esse profissional seria o dono do produto porque possui autoridade para transformar os achados em ações operacionais.
+
+O uso esperado seria recorrente, por exemplo, em uma rotina semanal de acompanhamento.
+
+Durante essa rotina, o responsável poderia verificar:
+
+1. evolução da taxa de fraude;
+2. canais com maior exposição;
+3. categorias com comportamento anormal;
+4. segmentos de maior risco;
+5. impacto financeiro;
+6. comportamento das recusas;
+7. necessidade de investigação ou revisão de regras.
+
+O analista de risco seria responsável pela investigação detalhada dos sinais encontrados, enquanto o gestor seria responsável por priorizar e acompanhar as ações decorrentes desses sinais.
+
+A diretoria poderia utilizar o mesmo painel para acompanhamento executivo, mas não seria o principal "dono" operacional do produto.
+
+---
+
+# 10. Rotina de decisão sugerida
+
+O dashboard pode fazer parte de uma rotina semanal de gestão de risco.
+
+### 1. Monitorar
+
+Verificar os KPIs gerais e a evolução temporal.
+
+### 2. Identificar
+
+Localizar canais, categorias ou segmentos que apresentem risco acima do esperado.
+
+### 3. Investigar
+
+A equipe de risco analisa os recortes responsáveis pelo comportamento observado.
+
+### 4. Agir
+
+Quando necessário, podem ser propostas alterações em regras antifraude, níveis de monitoramento ou mecanismos de validação.
+
+### 5. Avaliar
+
+Na semana seguinte, os mesmos indicadores são utilizados para verificar se a intervenção produziu o resultado esperado.
+
+Dessa maneira, o dashboard participa de um ciclo contínuo:
+
+> **medir → identificar → investigar → agir → medir novamente.**
+
+---
+
+# 11. Conclusão
+
+A análise da TechPay demonstra que o risco de fraude não está distribuído de maneira uniforme entre os diferentes contextos da operação.
+
+O canal App apresenta uma taxa de fraude de 3,79%, enquanto a categoria Viagem chega a 5,32%. O segmento High-Risk apresenta um comportamento ainda mais expressivo, com taxa de fraude de 9,67%, em contraste com 0,95% no segmento Premium.
+
+Esses resultados mostram que uma estratégia antifraude baseada apenas em uma taxa global pode ser insuficiente.
+
+O principal valor do dashboard está justamente em transformar essas diferenças em informação acionável.
+
+O produto permite que a área de Risco identifique onde o risco está concentrado, acompanhe sua evolução e avalie o equilíbrio entre prevenção e impacto operacional.
+
+Portanto, o dashboard não deve ser entendido apenas como uma visualização dos dados processados na Etapa 2. Ele representa a **camada de decisão do pipeline de Big Data**, transformando as informações consolidadas nas tabelas Gold em uma ferramenta de monitoramento e priorização para a operação da TechPay.
+
+Seu sucesso não deve ser medido pela quantidade de gráficos apresentados, mas pela capacidade de responder às perguntas:
+
+> **Onde está o risco?**
+
+> **Qual é o impacto?**
+
+> **O comportamento está mudando?**
+
+> **Onde devemos investigar?**
+
+> **Qual ação devemos priorizar?**
+
+Esse é o papel do BI dentro da solução proposta.
