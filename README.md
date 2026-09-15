@@ -1,4 +1,4 @@
-# TechPay — Projeto Big Data Vitoria e Júlio
+# TechPay — Projeto Big Data
 
 Projeto desenvolvido para a avaliação da disciplina de Big Data, contemplando a execução dos Labs 1 a 12 e as etapas da Atividade Final.
 
