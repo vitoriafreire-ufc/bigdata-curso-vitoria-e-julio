@@ -1,0 +1,1140 @@
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>TECHPAY — Dashboard de Risco</title>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f6f8;
+    color: #222;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 25px;
+}
+
+.header {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+}
+
+.header h1 {
+    margin: 0 0 8px 0;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 0;
+    color: #666;
+}
+
+.filters {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+}
+
+.filter {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    min-width: 200px;
+}
+
+.filter label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.filter select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    font-size: 14px;
+}
+
+.kpis {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 20px;
+
+    margin-bottom: 20px;
+}
+
+.kpi {
+    background: white;
+    padding: 22px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+}
+
+.kpi-title {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+}
+
+.section h2 {
+    margin-top: 0;
+    font-size: 20px;
+}
+
+.two-columns {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 20px;
+}
+
+.chart {
+    width: 100%;
+    min-height: 400px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+
+    border-bottom:
+        1px solid #eee;
+}
+
+th {
+    background: #f7f7f7;
+}
+
+tbody tr:hover {
+    background: #fafafa;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.footer {
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    padding: 20px;
+}
+
+@media (max-width: 900px) {
+
+    .kpis {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .kpis {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- ================================================= -->
+    <!-- CABEÇALHO -->
+    <!-- ================================================= -->
+
+    <div class="header">
+
+        <h1>TECHPAY — Dashboard de Risco</h1>
+
+        <p>
+            Monitoramento de transações, fraudes e níveis de risco
+        </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- FILTROS -->
+    <!-- ================================================= -->
+
+    <div class="filters">
+
+        <div class="filter">
+
+            <label for="channelFilter">
+                Canal
+            </label>
+
+            <select id="channelFilter"
+                    onchange="updateDashboard()">
+
+                <option value="ALL">
+                    Todos
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="filter">
+
+            <label for="riskFilter">
+                Nível de risco
+            </label>
+
+            <select id="riskFilter"
+                    onchange="updateDashboard()">
+
+                <option value="ALL">
+                    Todos
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- KPIs -->
+    <!-- ================================================= -->
+
+    <div class="kpis">
+
+        <div class="kpi">
+
+            <div class="kpi-title">
+                Total de transações
+            </div>
+
+            <div class="kpi-value"
+                 id="kpiTransactions">
+                -
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-title">
+                Transações fraudulentas
+            </div>
+
+            <div class="kpi-value"
+                 id="kpiFraud">
+                -
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-title">
+                Taxa de fraude
+            </div>
+
+            <div class="kpi-value"
+                 id="kpiFraudRate">
+                -
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-title">
+                Valor fraudado
+            </div>
+
+            <div class="kpi-value"
+                 id="kpiFraudAmount">
+                -
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- TENDÊNCIA -->
+    <!-- ================================================= -->
+
+    <div class="section">
+
+        <h2>
+            Tendência
+        </h2>
+
+        <div id="dailyChart"
+             class="chart">
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- COMPOSIÇÃO -->
+    <!-- ================================================= -->
+
+    <div class="two-columns">
+
+        <div class="section">
+
+            <h2>
+                Composição por canal
+            </h2>
+
+            <div id="channelChart"
+                 class="chart">
+            </div>
+
+        </div>
+
+
+        <div class="section">
+
+            <h2>
+                Composição por nível de risco
+            </h2>
+
+            <div id="riskChart"
+                 class="chart">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- DETALHE -->
+    <!-- ================================================= -->
+
+    <div class="section">
+
+        <h2>
+            Detalhamento por categoria
+        </h2>
+
+        <div style="overflow-x:auto;">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Categoria
+                        </th>
+
+                        <th>
+                            Transações
+                        </th>
+
+                        <th>
+                            Fraudes
+                        </th>
+
+                        <th>
+                            Taxa de fraude
+                        </th>
+
+                        <th>
+                            Valor fraudado
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="categoryTable">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+
+        TECHPAY — Projeto de Big Data
+
+    </div>
+
+</div>
+
+
+<script>
+
+const DATA = {"channel": [{"channel": "web", "total_transactions": 9004, "total_amount": 1573259.1999999958, "avg_amount": 174.7289204797863, "avg_risk_score": 50.36443913816094, "fraud_transactions": 157, "fraud_amount": 31579.22, "declined_transactions": 853, "fraud_rate": 0.017436694802310086, "declined_rate": 0.09473567303420702, "fraud_rate_pct": 1.7436694802310087}, {"channel": "app", "total_transactions": 12021, "total_amount": 2007907.0599999952, "avg_amount": 167.03328009316988, "avg_risk_score": 49.82269694700933, "fraud_transactions": 455, "fraud_amount": 63909.90999999995, "declined_transactions": 1333, "fraud_rate": 0.037850428416937025, "declined_rate": 0.11088927709841111, "fraud_rate_pct": 3.7850428416937025}, {"channel": "pos", "total_transactions": 5968, "total_amount": 1088597.6699999978, "avg_amount": 182.4057758042892, "avg_risk_score": 50.59339644772129, "fraud_transactions": 85, "fraud_amount": 11483.499999999996, "declined_transactions": 558, "fraud_rate": 0.014242627345844505, "declined_rate": 0.09349865951742628, "fraud_rate_pct": 1.4242627345844505}, {"channel": "atm", "total_transactions": 3007, "total_amount": 538079.5699999998, "avg_amount": 178.9423245759893, "avg_risk_score": 49.502440971067585, "fraud_transactions": 54, "fraud_amount": 12395.300000000003, "declined_transactions": 308, "fraud_rate": 0.017958097771865647, "declined_rate": 0.10242766877286331, "fraud_rate_pct": 1.7958097771865646}], "daily": [{"date": "2025-01-01", "total_transactions": 84, "total_amount": 16644.34, "avg_risk_score": 48.81630952380953, "fraud_transactions": 3, "fraud_amount": 87.32, "declined_transactions": 5, "fraud_rate": 0.03571428571428571, "fraud_rate_pct": 3.571428571428571}, {"date": "2025-01-02", "total_transactions": 91, "total_amount": 11728.19, "avg_risk_score": 54.93747252747253, "fraud_transactions": 2, "fraud_amount": 94.31, "declined_transactions": 7, "fraud_rate": 0.02197802197802198, "fraud_rate_pct": 2.197802197802198}, {"date": "2025-01-03", "total_transactions": 88, "total_amount": 12688.109999999997, "avg_risk_score": 48.800113636363655, "fraud_transactions": 1, "fraud_amount": 237.07, "declined_transactions": 9, "fraud_rate": 0.011363636363636364, "fraud_rate_pct": 1.1363636363636365}, {"date": "2025-01-04", "total_transactions": 90, "total_amount": 14148.179999999997, "avg_risk_score": 50.383333333333326, "fraud_transactions": 2, "fraud_amount": 242.39999999999998, "declined_transactions": 13, "fraud_rate": 0.022222222222222223, "fraud_rate_pct": 2.2222222222222223}, {"date": "2025-01-05", "total_transactions": 89, "total_amount": 12078.849999999997, "avg_risk_score": 48.820337078651676, "fraud_transactions": 3, "fraud_amount": 1445.62, "declined_transactions": 8, "fraud_rate": 0.033707865168539325, "fraud_rate_pct": 3.3707865168539324}, {"date": "2025-01-06", "total_transactions": 72, "total_amount": 15209.07, "avg_risk_score": 53.09374999999999, "fraud_transactions": 1, "fraud_amount": 391.07, "declined_transactions": 5, "fraud_rate": 0.013888888888888888, "fraud_rate_pct": 1.3888888888888888}, {"date": "2025-01-07", "total_transactions": 87, "total_amount": 17968.42, "avg_risk_score": 55.542988505747125, "fraud_transactions": 3, "fraud_amount": 1616.9499999999998, "declined_transactions": 10, "fraud_rate": 0.034482758620689655, "fraud_rate_pct": 3.4482758620689653}, {"date": "2025-01-08", "total_transactions": 89, "total_amount": 10322.280000000004, "avg_risk_score": 48.46089887640449, "fraud_transactions": 1, "fraud_amount": 264.29, "declined_transactions": 6, "fraud_rate": 0.011235955056179775, "fraud_rate_pct": 1.1235955056179776}, {"date": "2025-01-09", "total_transactions": 82, "total_amount": 13790.149999999998, "avg_risk_score": 55.43329268292681, "fraud_transactions": 2, "fraud_amount": 104.37, "declined_transactions": 12, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-01-10", "total_transactions": 84, "total_amount": 17662.409999999996, "avg_risk_score": 49.920833333333334, "fraud_transactions": 5, "fraud_amount": 1898.67, "declined_transactions": 13, "fraud_rate": 0.05952380952380952, "fraud_rate_pct": 5.952380952380952}, {"date": "2025-01-11", "total_transactions": 99, "total_amount": 22382.290000000015, "avg_risk_score": 49.96656565656565, "fraud_transactions": 2, "fraud_amount": 541.13, "declined_transactions": 9, "fraud_rate": 0.020202020202020204, "fraud_rate_pct": 2.0202020202020203}, {"date": "2025-01-12", "total_transactions": 104, "total_amount": 15171.369999999999, "avg_risk_score": 51.29836538461537, "fraud_transactions": 3, "fraud_amount": 204.63, "declined_transactions": 10, "fraud_rate": 0.028846153846153848, "fraud_rate_pct": 2.8846153846153846}, {"date": "2025-01-13", "total_transactions": 89, "total_amount": 14501.589999999998, "avg_risk_score": 50.391797752809005, "fraud_transactions": 2, "fraud_amount": 1805.66, "declined_transactions": 6, "fraud_rate": 0.02247191011235955, "fraud_rate_pct": 2.247191011235955}, {"date": "2025-01-14", "total_transactions": 76, "total_amount": 18768.000000000007, "avg_risk_score": 51.239605263157905, "fraud_transactions": 3, "fraud_amount": 774.62, "declined_transactions": 13, "fraud_rate": 0.039473684210526314, "fraud_rate_pct": 3.9473684210526314}, {"date": "2025-01-15", "total_transactions": 88, "total_amount": 27218.079999999987, "avg_risk_score": 44.20977272727274, "fraud_transactions": 2, "fraud_amount": 145.12, "declined_transactions": 5, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-01-16", "total_transactions": 74, "total_amount": 12557.370000000004, "avg_risk_score": 52.14067567567568, "fraud_transactions": 1, "fraud_amount": 39.61, "declined_transactions": 7, "fraud_rate": 0.013513513513513514, "fraud_rate_pct": 1.3513513513513513}, {"date": "2025-01-17", "total_transactions": 76, "total_amount": 15351.140000000003, "avg_risk_score": 50.467894736842105, "fraud_transactions": 1, "fraud_amount": 78.24, "declined_transactions": 3, "fraud_rate": 0.013157894736842105, "fraud_rate_pct": 1.3157894736842104}, {"date": "2025-01-18", "total_transactions": 79, "total_amount": 9760.29, "avg_risk_score": 52.01822784810125, "fraud_transactions": 1, "fraud_amount": 34.91, "declined_transactions": 6, "fraud_rate": 0.012658227848101266, "fraud_rate_pct": 1.2658227848101267}, {"date": "2025-01-19", "total_transactions": 58, "total_amount": 11147.279999999997, "avg_risk_score": 49.358103448275855, "fraud_transactions": 1, "fraud_amount": 379.19, "declined_transactions": 4, "fraud_rate": 0.017241379310344827, "fraud_rate_pct": 1.7241379310344827}, {"date": "2025-01-20", "total_transactions": 93, "total_amount": 15840.910000000003, "avg_risk_score": 48.25989247311827, "fraud_transactions": 2, "fraud_amount": 222.79000000000002, "declined_transactions": 6, "fraud_rate": 0.021505376344086023, "fraud_rate_pct": 2.1505376344086025}, {"date": "2025-01-21", "total_transactions": 95, "total_amount": 15743.229999999994, "avg_risk_score": 50.15800000000001, "fraud_transactions": 3, "fraud_amount": 475.44, "declined_transactions": 8, "fraud_rate": 0.031578947368421054, "fraud_rate_pct": 3.1578947368421053}, {"date": "2025-01-22", "total_transactions": 69, "total_amount": 12739.44, "avg_risk_score": 54.57956521739129, "fraud_transactions": 3, "fraud_amount": 264.18, "declined_transactions": 9, "fraud_rate": 0.043478260869565216, "fraud_rate_pct": 4.3478260869565215}, {"date": "2025-01-23", "total_transactions": 102, "total_amount": 13190.330000000002, "avg_risk_score": 53.756176470588215, "fraud_transactions": 3, "fraud_amount": 574.75, "declined_transactions": 12, "fraud_rate": 0.029411764705882353, "fraud_rate_pct": 2.941176470588235}, {"date": "2025-01-24", "total_transactions": 83, "total_amount": 19197.899999999998, "avg_risk_score": 49.627228915662656, "fraud_transactions": 3, "fraud_amount": 370.85, "declined_transactions": 12, "fraud_rate": 0.03614457831325301, "fraud_rate_pct": 3.614457831325301}, {"date": "2025-01-25", "total_transactions": 72, "total_amount": 8965.300000000003, "avg_risk_score": 56.15722222222222, "fraud_transactions": 1, "fraud_amount": 35.7, "declined_transactions": 8, "fraud_rate": 0.013888888888888888, "fraud_rate_pct": 1.3888888888888888}, {"date": "2025-01-26", "total_transactions": 91, "total_amount": 15202.140000000001, "avg_risk_score": 47.914505494505526, "fraud_transactions": 2, "fraud_amount": 93.38, "declined_transactions": 12, "fraud_rate": 0.02197802197802198, "fraud_rate_pct": 2.197802197802198}, {"date": "2025-01-27", "total_transactions": 81, "total_amount": 12686.870000000003, "avg_risk_score": 48.54382716049382, "fraud_transactions": 3, "fraud_amount": 974.58, "declined_transactions": 8, "fraud_rate": 0.037037037037037035, "fraud_rate_pct": 3.7037037037037033}, {"date": "2025-01-28", "total_transactions": 83, "total_amount": 19213.090000000004, "avg_risk_score": 52.89457831325302, "fraud_transactions": 3, "fraud_amount": 312.22, "declined_transactions": 6, "fraud_rate": 0.03614457831325301, "fraud_rate_pct": 3.614457831325301}, {"date": "2025-01-29", "total_transactions": 80, "total_amount": 13089.309999999994, "avg_risk_score": 50.25987499999999, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 3, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-01-30", "total_transactions": 88, "total_amount": 17645.269999999997, "avg_risk_score": 52.08579545454545, "fraud_transactions": 1, "fraud_amount": 311.6, "declined_transactions": 9, "fraud_rate": 0.011363636363636364, "fraud_rate_pct": 1.1363636363636365}, {"date": "2025-01-31", "total_transactions": 89, "total_amount": 15197.900000000003, "avg_risk_score": 46.26314606741573, "fraud_transactions": 5, "fraud_amount": 719.33, "declined_transactions": 11, "fraud_rate": 0.056179775280898875, "fraud_rate_pct": 5.617977528089887}, {"date": "2025-02-01", "total_transactions": 77, "total_amount": 14114.150000000001, "avg_risk_score": 51.65064935064935, "fraud_transactions": 2, "fraud_amount": 362.90999999999997, "declined_transactions": 7, "fraud_rate": 0.025974025974025976, "fraud_rate_pct": 2.5974025974025974}, {"date": "2025-02-02", "total_transactions": 66, "total_amount": 13131.069999999994, "avg_risk_score": 51.682272727272725, "fraud_transactions": 5, "fraud_amount": 762.9100000000001, "declined_transactions": 8, "fraud_rate": 0.07575757575757576, "fraud_rate_pct": 7.575757575757576}, {"date": "2025-02-03", "total_transactions": 77, "total_amount": 15774.380000000003, "avg_risk_score": 51.97844155844153, "fraud_transactions": 5, "fraud_amount": 704.14, "declined_transactions": 11, "fraud_rate": 0.06493506493506493, "fraud_rate_pct": 6.493506493506493}, {"date": "2025-02-04", "total_transactions": 69, "total_amount": 12748.900000000001, "avg_risk_score": 52.24884057971016, "fraud_transactions": 4, "fraud_amount": 824.5899999999999, "declined_transactions": 7, "fraud_rate": 0.057971014492753624, "fraud_rate_pct": 5.797101449275362}, {"date": "2025-02-05", "total_transactions": 75, "total_amount": 10725.820000000003, "avg_risk_score": 55.91773333333333, "fraud_transactions": 3, "fraud_amount": 1372.66, "declined_transactions": 8, "fraud_rate": 0.04, "fraud_rate_pct": 4.0}, {"date": "2025-02-06", "total_transactions": 97, "total_amount": 32183.559999999983, "avg_risk_score": 49.84731958762886, "fraud_transactions": 2, "fraud_amount": 59.879999999999995, "declined_transactions": 7, "fraud_rate": 0.020618556701030927, "fraud_rate_pct": 2.0618556701030926}, {"date": "2025-02-07", "total_transactions": 82, "total_amount": 10114.649999999996, "avg_risk_score": 52.123536585365834, "fraud_transactions": 2, "fraud_amount": 68.88, "declined_transactions": 11, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-02-08", "total_transactions": 77, "total_amount": 11144.859999999999, "avg_risk_score": 49.539610389610395, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 8, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-02-09", "total_transactions": 87, "total_amount": 17082.69, "avg_risk_score": 47.04551724137932, "fraud_transactions": 4, "fraud_amount": 209.95999999999998, "declined_transactions": 11, "fraud_rate": 0.04597701149425287, "fraud_rate_pct": 4.597701149425287}, {"date": "2025-02-10", "total_transactions": 93, "total_amount": 22599.63, "avg_risk_score": 51.519569892473136, "fraud_transactions": 3, "fraud_amount": 314.87, "declined_transactions": 8, "fraud_rate": 0.03225806451612903, "fraud_rate_pct": 3.225806451612903}, {"date": "2025-02-11", "total_transactions": 86, "total_amount": 13108.400000000001, "avg_risk_score": 50.40197674418605, "fraud_transactions": 3, "fraud_amount": 285.82, "declined_transactions": 9, "fraud_rate": 0.03488372093023256, "fraud_rate_pct": 3.488372093023256}, {"date": "2025-02-12", "total_transactions": 93, "total_amount": 13641.679999999997, "avg_risk_score": 45.6810752688172, "fraud_transactions": 2, "fraud_amount": 491.02, "declined_transactions": 7, "fraud_rate": 0.021505376344086023, "fraud_rate_pct": 2.1505376344086025}, {"date": "2025-02-13", "total_transactions": 90, "total_amount": 18629.61, "avg_risk_score": 52.04133333333331, "fraud_transactions": 3, "fraud_amount": 271.05, "declined_transactions": 10, "fraud_rate": 0.03333333333333333, "fraud_rate_pct": 3.3333333333333335}, {"date": "2025-02-14", "total_transactions": 77, "total_amount": 20190.039999999997, "avg_risk_score": 43.822727272727256, "fraud_transactions": 4, "fraud_amount": 410.22, "declined_transactions": 9, "fraud_rate": 0.05194805194805195, "fraud_rate_pct": 5.194805194805195}, {"date": "2025-02-15", "total_transactions": 91, "total_amount": 10692.179999999995, "avg_risk_score": 51.80593406593407, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 13, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-02-16", "total_transactions": 64, "total_amount": 9437.269999999997, "avg_risk_score": 48.001250000000006, "fraud_transactions": 2, "fraud_amount": 105.60999999999999, "declined_transactions": 11, "fraud_rate": 0.03125, "fraud_rate_pct": 3.125}, {"date": "2025-02-17", "total_transactions": 87, "total_amount": 13874.289999999995, "avg_risk_score": 52.04885057471263, "fraud_transactions": 2, "fraud_amount": 110.22, "declined_transactions": 5, "fraud_rate": 0.022988505747126436, "fraud_rate_pct": 2.2988505747126435}, {"date": "2025-02-18", "total_transactions": 86, "total_amount": 11237.199999999999, "avg_risk_score": 53.08453488372093, "fraud_transactions": 2, "fraud_amount": 81.35, "declined_transactions": 7, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-02-19", "total_transactions": 86, "total_amount": 9085.279999999999, "avg_risk_score": 50.8206976744186, "fraud_transactions": 1, "fraud_amount": 70.55, "declined_transactions": 6, "fraud_rate": 0.011627906976744186, "fraud_rate_pct": 1.1627906976744187}, {"date": "2025-02-20", "total_transactions": 91, "total_amount": 32376.949999999997, "avg_risk_score": 49.2089010989011, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-02-21", "total_transactions": 78, "total_amount": 11292.26, "avg_risk_score": 50.702564102564104, "fraud_transactions": 1, "fraud_amount": 232.49, "declined_transactions": 5, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-02-22", "total_transactions": 83, "total_amount": 13012.66, "avg_risk_score": 45.95168674698796, "fraud_transactions": 2, "fraud_amount": 329.16, "declined_transactions": 6, "fraud_rate": 0.024096385542168676, "fraud_rate_pct": 2.4096385542168677}, {"date": "2025-02-23", "total_transactions": 77, "total_amount": 12605.019999999999, "avg_risk_score": 48.028181818181814, "fraud_transactions": 1, "fraud_amount": 38.53, "declined_transactions": 5, "fraud_rate": 0.012987012987012988, "fraud_rate_pct": 1.2987012987012987}, {"date": "2025-02-24", "total_transactions": 84, "total_amount": 19043.440000000002, "avg_risk_score": 49.91904761904762, "fraud_transactions": 2, "fraud_amount": 170.28, "declined_transactions": 8, "fraud_rate": 0.023809523809523808, "fraud_rate_pct": 2.380952380952381}, {"date": "2025-02-25", "total_transactions": 93, "total_amount": 13620.490000000002, "avg_risk_score": 44.45064516129031, "fraud_transactions": 1, "fraud_amount": 5.0, "declined_transactions": 8, "fraud_rate": 0.010752688172043012, "fraud_rate_pct": 1.0752688172043012}, {"date": "2025-02-26", "total_transactions": 91, "total_amount": 13636.78, "avg_risk_score": 51.06846153846154, "fraud_transactions": 1, "fraud_amount": 911.41, "declined_transactions": 9, "fraud_rate": 0.01098901098901099, "fraud_rate_pct": 1.098901098901099}, {"date": "2025-02-27", "total_transactions": 78, "total_amount": 11291.639999999994, "avg_risk_score": 46.65846153846155, "fraud_transactions": 2, "fraud_amount": 409.04, "declined_transactions": 14, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-02-28", "total_transactions": 82, "total_amount": 13770.929999999998, "avg_risk_score": 48.8419512195122, "fraud_transactions": 3, "fraud_amount": 104.05, "declined_transactions": 12, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-03-01", "total_transactions": 75, "total_amount": 13813.529999999997, "avg_risk_score": 56.18093333333333, "fraud_transactions": 3, "fraud_amount": 190.26, "declined_transactions": 8, "fraud_rate": 0.04, "fraud_rate_pct": 4.0}, {"date": "2025-03-02", "total_transactions": 81, "total_amount": 17548.72999999999, "avg_risk_score": 47.075185185185184, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 4, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-03", "total_transactions": 81, "total_amount": 15157.280000000002, "avg_risk_score": 56.1037037037037, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 10, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-04", "total_transactions": 61, "total_amount": 10339.160000000002, "avg_risk_score": 52.34950819672129, "fraud_transactions": 1, "fraud_amount": 58.78, "declined_transactions": 7, "fraud_rate": 0.01639344262295082, "fraud_rate_pct": 1.639344262295082}, {"date": "2025-03-05", "total_transactions": 77, "total_amount": 13428.240000000005, "avg_risk_score": 54.329350649350644, "fraud_transactions": 1, "fraud_amount": 343.56, "declined_transactions": 8, "fraud_rate": 0.012987012987012988, "fraud_rate_pct": 1.2987012987012987}, {"date": "2025-03-06", "total_transactions": 80, "total_amount": 12282.880000000001, "avg_risk_score": 49.05887499999998, "fraud_transactions": 2, "fraud_amount": 258.69, "declined_transactions": 7, "fraud_rate": 0.025, "fraud_rate_pct": 2.5}, {"date": "2025-03-07", "total_transactions": 93, "total_amount": 13922.460000000003, "avg_risk_score": 47.85677419354839, "fraud_transactions": 2, "fraud_amount": 58.1, "declined_transactions": 9, "fraud_rate": 0.021505376344086023, "fraud_rate_pct": 2.1505376344086025}, {"date": "2025-03-08", "total_transactions": 82, "total_amount": 10026.689999999999, "avg_risk_score": 51.191219512195126, "fraud_transactions": 3, "fraud_amount": 299.0, "declined_transactions": 9, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-03-09", "total_transactions": 89, "total_amount": 19368.930000000004, "avg_risk_score": 47.994943820224734, "fraud_transactions": 3, "fraud_amount": 376.61, "declined_transactions": 7, "fraud_rate": 0.033707865168539325, "fraud_rate_pct": 3.3707865168539324}, {"date": "2025-03-10", "total_transactions": 79, "total_amount": 14340.359999999997, "avg_risk_score": 47.5020253164557, "fraud_transactions": 5, "fraud_amount": 624.01, "declined_transactions": 15, "fraud_rate": 0.06329113924050633, "fraud_rate_pct": 6.329113924050633}, {"date": "2025-03-11", "total_transactions": 77, "total_amount": 8405.28, "avg_risk_score": 51.69883116883117, "fraud_transactions": 2, "fraud_amount": 176.52999999999997, "declined_transactions": 7, "fraud_rate": 0.025974025974025976, "fraud_rate_pct": 2.5974025974025974}, {"date": "2025-03-12", "total_transactions": 67, "total_amount": 11234.220000000001, "avg_risk_score": 49.10283582089551, "fraud_transactions": 1, "fraud_amount": 1316.67, "declined_transactions": 6, "fraud_rate": 0.014925373134328358, "fraud_rate_pct": 1.4925373134328357}, {"date": "2025-03-13", "total_transactions": 73, "total_amount": 13174.619999999999, "avg_risk_score": 54.11479452054794, "fraud_transactions": 1, "fraud_amount": 124.48, "declined_transactions": 8, "fraud_rate": 0.0136986301369863, "fraud_rate_pct": 1.36986301369863}, {"date": "2025-03-14", "total_transactions": 81, "total_amount": 13865.870000000006, "avg_risk_score": 51.63222222222223, "fraud_transactions": 4, "fraud_amount": 304.51, "declined_transactions": 13, "fraud_rate": 0.04938271604938271, "fraud_rate_pct": 4.938271604938271}, {"date": "2025-03-15", "total_transactions": 92, "total_amount": 15116.649999999994, "avg_risk_score": 53.23826086956523, "fraud_transactions": 1, "fraud_amount": 146.92, "declined_transactions": 6, "fraud_rate": 0.010869565217391304, "fraud_rate_pct": 1.0869565217391304}, {"date": "2025-03-16", "total_transactions": 81, "total_amount": 8777.160000000002, "avg_risk_score": 50.73444444444443, "fraud_transactions": 6, "fraud_amount": 586.07, "declined_transactions": 15, "fraud_rate": 0.07407407407407407, "fraud_rate_pct": 7.4074074074074066}, {"date": "2025-03-17", "total_transactions": 78, "total_amount": 10967.099999999995, "avg_risk_score": 47.931025641025634, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 9, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-18", "total_transactions": 75, "total_amount": 17828.680000000008, "avg_risk_score": 54.023333333333326, "fraud_transactions": 2, "fraud_amount": 104.96000000000001, "declined_transactions": 10, "fraud_rate": 0.02666666666666667, "fraud_rate_pct": 2.666666666666667}, {"date": "2025-03-19", "total_transactions": 66, "total_amount": 10923.39, "avg_risk_score": 54.579696969696975, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 4, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-20", "total_transactions": 81, "total_amount": 14385.709999999995, "avg_risk_score": 45.62209876543209, "fraud_transactions": 3, "fraud_amount": 692.67, "declined_transactions": 6, "fraud_rate": 0.037037037037037035, "fraud_rate_pct": 3.7037037037037033}, {"date": "2025-03-21", "total_transactions": 81, "total_amount": 13039.469999999998, "avg_risk_score": 51.03012345679014, "fraud_transactions": 1, "fraud_amount": 105.79, "declined_transactions": 13, "fraud_rate": 0.012345679012345678, "fraud_rate_pct": 1.2345679012345678}, {"date": "2025-03-22", "total_transactions": 86, "total_amount": 17356.170000000002, "avg_risk_score": 49.42593023255813, "fraud_transactions": 1, "fraud_amount": 155.35, "declined_transactions": 2, "fraud_rate": 0.011627906976744186, "fraud_rate_pct": 1.1627906976744187}, {"date": "2025-03-23", "total_transactions": 91, "total_amount": 17442.129999999997, "avg_risk_score": 45.7043956043956, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-24", "total_transactions": 81, "total_amount": 19992.9, "avg_risk_score": 48.58913580246914, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-03-25", "total_transactions": 82, "total_amount": 14414.389999999998, "avg_risk_score": 45.703658536585394, "fraud_transactions": 2, "fraud_amount": 85.89, "declined_transactions": 7, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-03-26", "total_transactions": 92, "total_amount": 10929.129999999997, "avg_risk_score": 48.878043478260864, "fraud_transactions": 2, "fraud_amount": 25.58, "declined_transactions": 13, "fraud_rate": 0.021739130434782608, "fraud_rate_pct": 2.1739130434782608}, {"date": "2025-03-27", "total_transactions": 69, "total_amount": 12553.589999999997, "avg_risk_score": 49.02594202898549, "fraud_transactions": 4, "fraud_amount": 155.01999999999998, "declined_transactions": 7, "fraud_rate": 0.057971014492753624, "fraud_rate_pct": 5.797101449275362}, {"date": "2025-03-28", "total_transactions": 84, "total_amount": 14274.46, "avg_risk_score": 47.272738095238104, "fraud_transactions": 1, "fraud_amount": 616.55, "declined_transactions": 9, "fraud_rate": 0.011904761904761904, "fraud_rate_pct": 1.1904761904761905}, {"date": "2025-03-29", "total_transactions": 96, "total_amount": 18693.940000000002, "avg_risk_score": 48.75406250000001, "fraud_transactions": 3, "fraud_amount": 589.14, "declined_transactions": 7, "fraud_rate": 0.03125, "fraud_rate_pct": 3.125}, {"date": "2025-03-30", "total_transactions": 84, "total_amount": 20604.120000000003, "avg_risk_score": 48.71809523809524, "fraud_transactions": 4, "fraud_amount": 383.78, "declined_transactions": 9, "fraud_rate": 0.047619047619047616, "fraud_rate_pct": 4.761904761904762}, {"date": "2025-03-31", "total_transactions": 96, "total_amount": 15518.91, "avg_risk_score": 46.10625000000001, "fraud_transactions": 2, "fraud_amount": 1063.48, "declined_transactions": 9, "fraud_rate": 0.020833333333333332, "fraud_rate_pct": 2.083333333333333}, {"date": "2025-04-01", "total_transactions": 84, "total_amount": 14243.679999999998, "avg_risk_score": 48.40023809523808, "fraud_transactions": 2, "fraud_amount": 804.46, "declined_transactions": 4, "fraud_rate": 0.023809523809523808, "fraud_rate_pct": 2.380952380952381}, {"date": "2025-04-02", "total_transactions": 71, "total_amount": 7398.459999999997, "avg_risk_score": 48.46056338028169, "fraud_transactions": 2, "fraud_amount": 281.69, "declined_transactions": 10, "fraud_rate": 0.028169014084507043, "fraud_rate_pct": 2.8169014084507045}, {"date": "2025-04-03", "total_transactions": 88, "total_amount": 10142.130000000001, "avg_risk_score": 45.46306818181818, "fraud_transactions": 3, "fraud_amount": 286.57, "declined_transactions": 9, "fraud_rate": 0.03409090909090909, "fraud_rate_pct": 3.4090909090909087}, {"date": "2025-04-04", "total_transactions": 82, "total_amount": 16683.34, "avg_risk_score": 54.66585365853659, "fraud_transactions": 3, "fraud_amount": 91.52, "declined_transactions": 8, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-04-05", "total_transactions": 110, "total_amount": 30176.760000000006, "avg_risk_score": 53.718999999999994, "fraud_transactions": 5, "fraud_amount": 502.28999999999996, "declined_transactions": 17, "fraud_rate": 0.045454545454545456, "fraud_rate_pct": 4.545454545454546}, {"date": "2025-04-06", "total_transactions": 66, "total_amount": 11581.889999999998, "avg_risk_score": 51.78666666666668, "fraud_transactions": 1, "fraud_amount": 356.57, "declined_transactions": 4, "fraud_rate": 0.015151515151515152, "fraud_rate_pct": 1.5151515151515151}, {"date": "2025-04-07", "total_transactions": 94, "total_amount": 11419.030000000002, "avg_risk_score": 42.57712765957447, "fraud_transactions": 1, "fraud_amount": 119.1, "declined_transactions": 8, "fraud_rate": 0.010638297872340425, "fraud_rate_pct": 1.0638297872340425}, {"date": "2025-04-08", "total_transactions": 70, "total_amount": 12291.929999999997, "avg_risk_score": 47.27128571428572, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-04-09", "total_transactions": 86, "total_amount": 18695.539999999994, "avg_risk_score": 46.43279069767439, "fraud_transactions": 6, "fraud_amount": 1736.73, "declined_transactions": 15, "fraud_rate": 0.06976744186046512, "fraud_rate_pct": 6.976744186046512}, {"date": "2025-04-10", "total_transactions": 77, "total_amount": 11696.910000000005, "avg_risk_score": 52.253116883116896, "fraud_transactions": 3, "fraud_amount": 98.1, "declined_transactions": 10, "fraud_rate": 0.03896103896103896, "fraud_rate_pct": 3.896103896103896}, {"date": "2025-04-11", "total_transactions": 76, "total_amount": 9862.289999999999, "avg_risk_score": 50.79223684210527, "fraud_transactions": 3, "fraud_amount": 311.61, "declined_transactions": 7, "fraud_rate": 0.039473684210526314, "fraud_rate_pct": 3.9473684210526314}, {"date": "2025-04-12", "total_transactions": 69, "total_amount": 12489.150000000005, "avg_risk_score": 53.553768115942034, "fraud_transactions": 1, "fraud_amount": 58.2, "declined_transactions": 5, "fraud_rate": 0.014492753623188406, "fraud_rate_pct": 1.4492753623188406}, {"date": "2025-04-13", "total_transactions": 96, "total_amount": 14413.990000000002, "avg_risk_score": 47.12802083333332, "fraud_transactions": 2, "fraud_amount": 117.54, "declined_transactions": 10, "fraud_rate": 0.020833333333333332, "fraud_rate_pct": 2.083333333333333}, {"date": "2025-04-14", "total_transactions": 76, "total_amount": 16991.600000000002, "avg_risk_score": 45.893421052631574, "fraud_transactions": 1, "fraud_amount": 33.57, "declined_transactions": 8, "fraud_rate": 0.013157894736842105, "fraud_rate_pct": 1.3157894736842104}, {"date": "2025-04-15", "total_transactions": 88, "total_amount": 14110.429999999998, "avg_risk_score": 49.596818181818165, "fraud_transactions": 2, "fraud_amount": 340.69, "declined_transactions": 10, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-04-16", "total_transactions": 85, "total_amount": 16343.940000000004, "avg_risk_score": 49.56694117647057, "fraud_transactions": 2, "fraud_amount": 94.43, "declined_transactions": 11, "fraud_rate": 0.023529411764705882, "fraud_rate_pct": 2.3529411764705883}, {"date": "2025-04-17", "total_transactions": 78, "total_amount": 14465.259999999998, "avg_risk_score": 43.94333333333335, "fraud_transactions": 2, "fraud_amount": 122.08, "declined_transactions": 8, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-04-18", "total_transactions": 83, "total_amount": 15125.970000000005, "avg_risk_score": 50.62373493975903, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 11, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-04-19", "total_transactions": 78, "total_amount": 12273.34, "avg_risk_score": 49.48653846153846, "fraud_transactions": 1, "fraud_amount": 18.25, "declined_transactions": 3, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-04-20", "total_transactions": 86, "total_amount": 18816.92, "avg_risk_score": 51.37709302325581, "fraud_transactions": 2, "fraud_amount": 313.32, "declined_transactions": 12, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-04-21", "total_transactions": 90, "total_amount": 12904.73, "avg_risk_score": 50.56911111111111, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-04-22", "total_transactions": 78, "total_amount": 10769.309999999998, "avg_risk_score": 49.65294871794872, "fraud_transactions": 1, "fraud_amount": 32.91, "declined_transactions": 6, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-04-23", "total_transactions": 65, "total_amount": 13396.059999999998, "avg_risk_score": 52.90984615384615, "fraud_transactions": 2, "fraud_amount": 336.44, "declined_transactions": 7, "fraud_rate": 0.03076923076923077, "fraud_rate_pct": 3.076923076923077}, {"date": "2025-04-24", "total_transactions": 85, "total_amount": 10945.310000000001, "avg_risk_score": 51.35717647058825, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-04-25", "total_transactions": 79, "total_amount": 11290.060000000003, "avg_risk_score": 50.295569620253154, "fraud_transactions": 2, "fraud_amount": 296.84000000000003, "declined_transactions": 12, "fraud_rate": 0.02531645569620253, "fraud_rate_pct": 2.5316455696202533}, {"date": "2025-04-26", "total_transactions": 86, "total_amount": 14245.050000000001, "avg_risk_score": 47.987093023255795, "fraud_transactions": 3, "fraud_amount": 1005.22, "declined_transactions": 7, "fraud_rate": 0.03488372093023256, "fraud_rate_pct": 3.488372093023256}, {"date": "2025-04-27", "total_transactions": 80, "total_amount": 11846.399999999998, "avg_risk_score": 47.939374999999984, "fraud_transactions": 4, "fraud_amount": 298.69, "declined_transactions": 7, "fraud_rate": 0.05, "fraud_rate_pct": 5.0}, {"date": "2025-04-28", "total_transactions": 104, "total_amount": 16920.65, "avg_risk_score": 48.26817307692308, "fraud_transactions": 3, "fraud_amount": 499.54999999999995, "declined_transactions": 10, "fraud_rate": 0.028846153846153848, "fraud_rate_pct": 2.8846153846153846}, {"date": "2025-04-29", "total_transactions": 78, "total_amount": 10215.800000000001, "avg_risk_score": 54.58141025641025, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 9, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-04-30", "total_transactions": 70, "total_amount": 8928.380000000001, "avg_risk_score": 49.906857142857135, "fraud_transactions": 3, "fraud_amount": 101.24000000000001, "declined_transactions": 7, "fraud_rate": 0.04285714285714286, "fraud_rate_pct": 4.285714285714286}, {"date": "2025-05-01", "total_transactions": 100, "total_amount": 14152.450000000003, "avg_risk_score": 45.9684, "fraud_transactions": 1, "fraud_amount": 11.44, "declined_transactions": 9, "fraud_rate": 0.01, "fraud_rate_pct": 1.0}, {"date": "2025-05-02", "total_transactions": 69, "total_amount": 9648.119999999997, "avg_risk_score": 55.67884057971014, "fraud_transactions": 1, "fraud_amount": 117.58, "declined_transactions": 5, "fraud_rate": 0.014492753623188406, "fraud_rate_pct": 1.4492753623188406}, {"date": "2025-05-03", "total_transactions": 88, "total_amount": 13756.559999999994, "avg_risk_score": 49.05613636363636, "fraud_transactions": 2, "fraud_amount": 60.75, "declined_transactions": 5, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-05-04", "total_transactions": 72, "total_amount": 14040.660000000002, "avg_risk_score": 51.228472222222216, "fraud_transactions": 4, "fraud_amount": 1116.42, "declined_transactions": 9, "fraud_rate": 0.05555555555555555, "fraud_rate_pct": 5.555555555555555}, {"date": "2025-05-05", "total_transactions": 73, "total_amount": 11848.009999999998, "avg_risk_score": 48.09150684931507, "fraud_transactions": 3, "fraud_amount": 82.36, "declined_transactions": 9, "fraud_rate": 0.0410958904109589, "fraud_rate_pct": 4.10958904109589}, {"date": "2025-05-06", "total_transactions": 81, "total_amount": 15418.79, "avg_risk_score": 51.70913580246914, "fraud_transactions": 5, "fraud_amount": 984.5699999999998, "declined_transactions": 9, "fraud_rate": 0.06172839506172839, "fraud_rate_pct": 6.172839506172839}, {"date": "2025-05-07", "total_transactions": 77, "total_amount": 12899.010000000002, "avg_risk_score": 53.58207792207793, "fraud_transactions": 2, "fraud_amount": 28.11, "declined_transactions": 11, "fraud_rate": 0.025974025974025976, "fraud_rate_pct": 2.5974025974025974}, {"date": "2025-05-08", "total_transactions": 66, "total_amount": 13047.179999999998, "avg_risk_score": 60.55651515151515, "fraud_transactions": 3, "fraud_amount": 1905.96, "declined_transactions": 4, "fraud_rate": 0.045454545454545456, "fraud_rate_pct": 4.545454545454546}, {"date": "2025-05-09", "total_transactions": 83, "total_amount": 10496.779999999999, "avg_risk_score": 45.29373493975905, "fraud_transactions": 2, "fraud_amount": 93.74000000000001, "declined_transactions": 16, "fraud_rate": 0.024096385542168676, "fraud_rate_pct": 2.4096385542168677}, {"date": "2025-05-10", "total_transactions": 87, "total_amount": 18265.309999999998, "avg_risk_score": 47.62540229885056, "fraud_transactions": 1, "fraud_amount": 21.94, "declined_transactions": 7, "fraud_rate": 0.011494252873563218, "fraud_rate_pct": 1.1494252873563218}, {"date": "2025-05-11", "total_transactions": 73, "total_amount": 12523.890000000001, "avg_risk_score": 51.32383561643836, "fraud_transactions": 1, "fraud_amount": 46.29, "declined_transactions": 10, "fraud_rate": 0.0136986301369863, "fraud_rate_pct": 1.36986301369863}, {"date": "2025-05-12", "total_transactions": 81, "total_amount": 14530.039999999999, "avg_risk_score": 48.344074074074065, "fraud_transactions": 2, "fraud_amount": 65.66, "declined_transactions": 9, "fraud_rate": 0.024691358024691357, "fraud_rate_pct": 2.4691358024691357}, {"date": "2025-05-13", "total_transactions": 81, "total_amount": 18241.519999999997, "avg_risk_score": 49.184567901234566, "fraud_transactions": 2, "fraud_amount": 525.86, "declined_transactions": 7, "fraud_rate": 0.024691358024691357, "fraud_rate_pct": 2.4691358024691357}, {"date": "2025-05-14", "total_transactions": 69, "total_amount": 7396.989999999999, "avg_risk_score": 50.625072463768106, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 11, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-05-15", "total_transactions": 76, "total_amount": 11803.980000000001, "avg_risk_score": 48.92407894736843, "fraud_transactions": 1, "fraud_amount": 362.36, "declined_transactions": 6, "fraud_rate": 0.013157894736842105, "fraud_rate_pct": 1.3157894736842104}, {"date": "2025-05-16", "total_transactions": 74, "total_amount": 9030.660000000003, "avg_risk_score": 52.49472972972974, "fraud_transactions": 2, "fraud_amount": 76.50999999999999, "declined_transactions": 10, "fraud_rate": 0.02702702702702703, "fraud_rate_pct": 2.7027027027027026}, {"date": "2025-05-17", "total_transactions": 90, "total_amount": 16939.030000000002, "avg_risk_score": 50.34277777777776, "fraud_transactions": 3, "fraud_amount": 1911.2600000000002, "declined_transactions": 12, "fraud_rate": 0.03333333333333333, "fraud_rate_pct": 3.3333333333333335}, {"date": "2025-05-18", "total_transactions": 86, "total_amount": 19844.159999999996, "avg_risk_score": 51.731744186046534, "fraud_transactions": 3, "fraud_amount": 65.28999999999999, "declined_transactions": 13, "fraud_rate": 0.03488372093023256, "fraud_rate_pct": 3.488372093023256}, {"date": "2025-05-19", "total_transactions": 78, "total_amount": 12948.0, "avg_risk_score": 55.70551282051283, "fraud_transactions": 2, "fraud_amount": 258.63, "declined_transactions": 7, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-05-20", "total_transactions": 88, "total_amount": 12561.960000000001, "avg_risk_score": 50.7528409090909, "fraud_transactions": 2, "fraud_amount": 230.13, "declined_transactions": 9, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-05-21", "total_transactions": 67, "total_amount": 7378.680000000002, "avg_risk_score": 51.20850746268656, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-05-22", "total_transactions": 67, "total_amount": 11633.37, "avg_risk_score": 50.711492537313426, "fraud_transactions": 1, "fraud_amount": 106.25, "declined_transactions": 6, "fraud_rate": 0.014925373134328358, "fraud_rate_pct": 1.4925373134328357}, {"date": "2025-05-23", "total_transactions": 89, "total_amount": 11246.730000000001, "avg_risk_score": 48.842696629213464, "fraud_transactions": 1, "fraud_amount": 38.71, "declined_transactions": 8, "fraud_rate": 0.011235955056179775, "fraud_rate_pct": 1.1235955056179776}, {"date": "2025-05-24", "total_transactions": 94, "total_amount": 16372.77, "avg_risk_score": 42.99797872340424, "fraud_transactions": 2, "fraud_amount": 49.510000000000005, "declined_transactions": 8, "fraud_rate": 0.02127659574468085, "fraud_rate_pct": 2.127659574468085}, {"date": "2025-05-25", "total_transactions": 105, "total_amount": 14819.28, "avg_risk_score": 50.64723809523809, "fraud_transactions": 2, "fraud_amount": 37.81, "declined_transactions": 8, "fraud_rate": 0.01904761904761905, "fraud_rate_pct": 1.9047619047619049}, {"date": "2025-05-26", "total_transactions": 79, "total_amount": 11170.190000000006, "avg_risk_score": 52.22746835443039, "fraud_transactions": 3, "fraud_amount": 224.87, "declined_transactions": 8, "fraud_rate": 0.0379746835443038, "fraud_rate_pct": 3.79746835443038}, {"date": "2025-05-27", "total_transactions": 74, "total_amount": 13478.480000000001, "avg_risk_score": 50.76918918918919, "fraud_transactions": 1, "fraud_amount": 746.6, "declined_transactions": 8, "fraud_rate": 0.013513513513513514, "fraud_rate_pct": 1.3513513513513513}, {"date": "2025-05-28", "total_transactions": 79, "total_amount": 18591.269999999997, "avg_risk_score": 52.25772151898734, "fraud_transactions": 1, "fraud_amount": 120.08, "declined_transactions": 7, "fraud_rate": 0.012658227848101266, "fraud_rate_pct": 1.2658227848101267}, {"date": "2025-05-29", "total_transactions": 86, "total_amount": 17177.58, "avg_risk_score": 49.51081395348837, "fraud_transactions": 2, "fraud_amount": 100.45, "declined_transactions": 8, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-05-30", "total_transactions": 86, "total_amount": 11665.699999999995, "avg_risk_score": 52.17116279069768, "fraud_transactions": 1, "fraud_amount": 21.25, "declined_transactions": 9, "fraud_rate": 0.011627906976744186, "fraud_rate_pct": 1.1627906976744187}, {"date": "2025-05-31", "total_transactions": 81, "total_amount": 9985.5, "avg_risk_score": 43.0743209876543, "fraud_transactions": 2, "fraud_amount": 144.4, "declined_transactions": 7, "fraud_rate": 0.024691358024691357, "fraud_rate_pct": 2.4691358024691357}, {"date": "2025-06-01", "total_transactions": 78, "total_amount": 10411.249999999998, "avg_risk_score": 47.93512820512821, "fraud_transactions": 3, "fraud_amount": 335.81, "declined_transactions": 7, "fraud_rate": 0.038461538461538464, "fraud_rate_pct": 3.8461538461538463}, {"date": "2025-06-02", "total_transactions": 93, "total_amount": 14391.710000000001, "avg_risk_score": 53.97913978494625, "fraud_transactions": 3, "fraud_amount": 560.88, "declined_transactions": 9, "fraud_rate": 0.03225806451612903, "fraud_rate_pct": 3.225806451612903}, {"date": "2025-06-03", "total_transactions": 82, "total_amount": 12001.45, "avg_risk_score": 53.331585365853634, "fraud_transactions": 2, "fraud_amount": 450.0, "declined_transactions": 5, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-06-04", "total_transactions": 79, "total_amount": 11489.0, "avg_risk_score": 52.4560759493671, "fraud_transactions": 3, "fraud_amount": 1328.83, "declined_transactions": 12, "fraud_rate": 0.0379746835443038, "fraud_rate_pct": 3.79746835443038}, {"date": "2025-06-05", "total_transactions": 71, "total_amount": 13512.72, "avg_risk_score": 50.12295774647888, "fraud_transactions": 2, "fraud_amount": 56.36, "declined_transactions": 6, "fraud_rate": 0.028169014084507043, "fraud_rate_pct": 2.8169014084507045}, {"date": "2025-06-06", "total_transactions": 67, "total_amount": 17228.609999999997, "avg_risk_score": 46.10671641791045, "fraud_transactions": 6, "fraud_amount": 355.23, "declined_transactions": 10, "fraud_rate": 0.08955223880597014, "fraud_rate_pct": 8.955223880597014}, {"date": "2025-06-07", "total_transactions": 92, "total_amount": 18177.730000000003, "avg_risk_score": 52.17217391304348, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-06-08", "total_transactions": 82, "total_amount": 11118.480000000001, "avg_risk_score": 48.560365853658546, "fraud_transactions": 4, "fraud_amount": 584.65, "declined_transactions": 13, "fraud_rate": 0.04878048780487805, "fraud_rate_pct": 4.878048780487805}, {"date": "2025-06-09", "total_transactions": 85, "total_amount": 13776.129999999997, "avg_risk_score": 47.03023529411765, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-06-10", "total_transactions": 89, "total_amount": 12321.67, "avg_risk_score": 52.78179775280902, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 8, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-06-11", "total_transactions": 95, "total_amount": 16365.79, "avg_risk_score": 54.75673684210527, "fraud_transactions": 3, "fraud_amount": 204.78, "declined_transactions": 13, "fraud_rate": 0.031578947368421054, "fraud_rate_pct": 3.1578947368421053}, {"date": "2025-06-12", "total_transactions": 87, "total_amount": 17993.52, "avg_risk_score": 50.04781609195401, "fraud_transactions": 4, "fraud_amount": 576.16, "declined_transactions": 8, "fraud_rate": 0.04597701149425287, "fraud_rate_pct": 4.597701149425287}, {"date": "2025-06-13", "total_transactions": 82, "total_amount": 11351.580000000002, "avg_risk_score": 45.271097560975605, "fraud_transactions": 3, "fraud_amount": 211.67, "declined_transactions": 11, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-06-14", "total_transactions": 87, "total_amount": 14281.509999999998, "avg_risk_score": 53.29988505747126, "fraud_transactions": 3, "fraud_amount": 638.26, "declined_transactions": 8, "fraud_rate": 0.034482758620689655, "fraud_rate_pct": 3.4482758620689653}, {"date": "2025-06-15", "total_transactions": 78, "total_amount": 15377.299999999997, "avg_risk_score": 45.76448717948718, "fraud_transactions": 1, "fraud_amount": 95.05, "declined_transactions": 7, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-06-16", "total_transactions": 91, "total_amount": 13034.539999999999, "avg_risk_score": 46.44945054945055, "fraud_transactions": 5, "fraud_amount": 242.06, "declined_transactions": 13, "fraud_rate": 0.054945054945054944, "fraud_rate_pct": 5.4945054945054945}, {"date": "2025-06-17", "total_transactions": 77, "total_amount": 12858.769999999999, "avg_risk_score": 52.43298701298702, "fraud_transactions": 2, "fraud_amount": 402.78999999999996, "declined_transactions": 4, "fraud_rate": 0.025974025974025976, "fraud_rate_pct": 2.5974025974025974}, {"date": "2025-06-18", "total_transactions": 90, "total_amount": 13406.060000000003, "avg_risk_score": 54.411555555555566, "fraud_transactions": 1, "fraud_amount": 30.21, "declined_transactions": 10, "fraud_rate": 0.011111111111111112, "fraud_rate_pct": 1.1111111111111112}, {"date": "2025-06-19", "total_transactions": 94, "total_amount": 13489.069999999998, "avg_risk_score": 52.44202127659574, "fraud_transactions": 4, "fraud_amount": 547.01, "declined_transactions": 5, "fraud_rate": 0.0425531914893617, "fraud_rate_pct": 4.25531914893617}, {"date": "2025-06-20", "total_transactions": 88, "total_amount": 16135.690000000006, "avg_risk_score": 49.90170454545456, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 9, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-06-21", "total_transactions": 90, "total_amount": 21625.249999999996, "avg_risk_score": 47.66744444444444, "fraud_transactions": 1, "fraud_amount": 19.09, "declined_transactions": 11, "fraud_rate": 0.011111111111111112, "fraud_rate_pct": 1.1111111111111112}, {"date": "2025-06-22", "total_transactions": 70, "total_amount": 8737.7, "avg_risk_score": 54.41528571428571, "fraud_transactions": 2, "fraud_amount": 70.91, "declined_transactions": 4, "fraud_rate": 0.02857142857142857, "fraud_rate_pct": 2.857142857142857}, {"date": "2025-06-23", "total_transactions": 94, "total_amount": 15199.19, "avg_risk_score": 49.831063829787226, "fraud_transactions": 2, "fraud_amount": 202.35000000000002, "declined_transactions": 13, "fraud_rate": 0.02127659574468085, "fraud_rate_pct": 2.127659574468085}, {"date": "2025-06-24", "total_transactions": 84, "total_amount": 16604.05, "avg_risk_score": 50.73809523809525, "fraud_transactions": 1, "fraud_amount": 159.02, "declined_transactions": 9, "fraud_rate": 0.011904761904761904, "fraud_rate_pct": 1.1904761904761905}, {"date": "2025-06-25", "total_transactions": 84, "total_amount": 16367.890000000001, "avg_risk_score": 51.65630952380953, "fraud_transactions": 2, "fraud_amount": 251.44, "declined_transactions": 5, "fraud_rate": 0.023809523809523808, "fraud_rate_pct": 2.380952380952381}, {"date": "2025-06-26", "total_transactions": 77, "total_amount": 9778.900000000003, "avg_risk_score": 48.59987012987013, "fraud_transactions": 4, "fraud_amount": 270.2, "declined_transactions": 8, "fraud_rate": 0.05194805194805195, "fraud_rate_pct": 5.194805194805195}, {"date": "2025-06-27", "total_transactions": 94, "total_amount": 25055.140000000003, "avg_risk_score": 49.97351063829788, "fraud_transactions": 1, "fraud_amount": 217.8, "declined_transactions": 10, "fraud_rate": 0.010638297872340425, "fraud_rate_pct": 1.0638297872340425}, {"date": "2025-06-28", "total_transactions": 90, "total_amount": 9858.680000000002, "avg_risk_score": 50.91866666666665, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 10, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-06-29", "total_transactions": 69, "total_amount": 8943.519999999997, "avg_risk_score": 52.50840579710144, "fraud_transactions": 1, "fraud_amount": 28.86, "declined_transactions": 4, "fraud_rate": 0.014492753623188406, "fraud_rate_pct": 1.4492753623188406}, {"date": "2025-06-30", "total_transactions": 86, "total_amount": 15304.349999999997, "avg_risk_score": 48.365232558139546, "fraud_transactions": 3, "fraud_amount": 601.6999999999999, "declined_transactions": 11, "fraud_rate": 0.03488372093023256, "fraud_rate_pct": 3.488372093023256}, {"date": "2025-07-01", "total_transactions": 91, "total_amount": 15853.830000000009, "avg_risk_score": 52.39296703296704, "fraud_transactions": 3, "fraud_amount": 233.7, "declined_transactions": 10, "fraud_rate": 0.03296703296703297, "fraud_rate_pct": 3.296703296703297}, {"date": "2025-07-02", "total_transactions": 86, "total_amount": 13274.039999999997, "avg_risk_score": 50.00511627906975, "fraud_transactions": 1, "fraud_amount": 813.21, "declined_transactions": 10, "fraud_rate": 0.011627906976744186, "fraud_rate_pct": 1.1627906976744187}, {"date": "2025-07-03", "total_transactions": 91, "total_amount": 17221.509999999987, "avg_risk_score": 54.18472527472528, "fraud_transactions": 3, "fraud_amount": 346.46, "declined_transactions": 11, "fraud_rate": 0.03296703296703297, "fraud_rate_pct": 3.296703296703297}, {"date": "2025-07-04", "total_transactions": 85, "total_amount": 13185.97, "avg_risk_score": 48.22776470588235, "fraud_transactions": 1, "fraud_amount": 710.96, "declined_transactions": 8, "fraud_rate": 0.011764705882352941, "fraud_rate_pct": 1.1764705882352942}, {"date": "2025-07-05", "total_transactions": 82, "total_amount": 11152.539999999997, "avg_risk_score": 53.301341463414616, "fraud_transactions": 3, "fraud_amount": 428.98, "declined_transactions": 16, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-07-06", "total_transactions": 85, "total_amount": 28028.170000000006, "avg_risk_score": 47.6384705882353, "fraud_transactions": 3, "fraud_amount": 1512.46, "declined_transactions": 11, "fraud_rate": 0.03529411764705882, "fraud_rate_pct": 3.5294117647058822}, {"date": "2025-07-07", "total_transactions": 75, "total_amount": 16366.810000000001, "avg_risk_score": 48.499733333333324, "fraud_transactions": 1, "fraud_amount": 138.91, "declined_transactions": 8, "fraud_rate": 0.013333333333333334, "fraud_rate_pct": 1.3333333333333335}, {"date": "2025-07-08", "total_transactions": 70, "total_amount": 12494.689999999999, "avg_risk_score": 49.1987142857143, "fraud_transactions": 1, "fraud_amount": 44.08, "declined_transactions": 6, "fraud_rate": 0.014285714285714285, "fraud_rate_pct": 1.4285714285714286}, {"date": "2025-07-09", "total_transactions": 87, "total_amount": 10864.019999999997, "avg_risk_score": 45.937471264367815, "fraud_transactions": 4, "fraud_amount": 211.60999999999999, "declined_transactions": 10, "fraud_rate": 0.04597701149425287, "fraud_rate_pct": 4.597701149425287}, {"date": "2025-07-10", "total_transactions": 94, "total_amount": 18977.26000000001, "avg_risk_score": 45.29074468085107, "fraud_transactions": 2, "fraud_amount": 125.55, "declined_transactions": 7, "fraud_rate": 0.02127659574468085, "fraud_rate_pct": 2.127659574468085}, {"date": "2025-07-11", "total_transactions": 75, "total_amount": 17767.320000000007, "avg_risk_score": 49.34933333333334, "fraud_transactions": 2, "fraud_amount": 145.32999999999998, "declined_transactions": 7, "fraud_rate": 0.02666666666666667, "fraud_rate_pct": 2.666666666666667}, {"date": "2025-07-12", "total_transactions": 82, "total_amount": 11033.199999999997, "avg_risk_score": 49.257073170731694, "fraud_transactions": 2, "fraud_amount": 543.86, "declined_transactions": 8, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-07-13", "total_transactions": 93, "total_amount": 12502.830000000002, "avg_risk_score": 52.799462365591395, "fraud_transactions": 2, "fraud_amount": 180.89999999999998, "declined_transactions": 7, "fraud_rate": 0.021505376344086023, "fraud_rate_pct": 2.1505376344086025}, {"date": "2025-07-14", "total_transactions": 74, "total_amount": 18522.079999999994, "avg_risk_score": 48.11121621621622, "fraud_transactions": 2, "fraud_amount": 222.58, "declined_transactions": 9, "fraud_rate": 0.02702702702702703, "fraud_rate_pct": 2.7027027027027026}, {"date": "2025-07-15", "total_transactions": 76, "total_amount": 9221.860000000002, "avg_risk_score": 47.7967105263158, "fraud_transactions": 2, "fraud_amount": 117.86, "declined_transactions": 9, "fraud_rate": 0.02631578947368421, "fraud_rate_pct": 2.631578947368421}, {"date": "2025-07-16", "total_transactions": 83, "total_amount": 16483.990000000005, "avg_risk_score": 52.62855421686747, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 9, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-07-17", "total_transactions": 70, "total_amount": 10527.589999999995, "avg_risk_score": 50.673285714285704, "fraud_transactions": 4, "fraud_amount": 337.06, "declined_transactions": 7, "fraud_rate": 0.05714285714285714, "fraud_rate_pct": 5.714285714285714}, {"date": "2025-07-18", "total_transactions": 99, "total_amount": 29032.020000000008, "avg_risk_score": 47.919090909090905, "fraud_transactions": 1, "fraud_amount": 133.14, "declined_transactions": 6, "fraud_rate": 0.010101010101010102, "fraud_rate_pct": 1.0101010101010102}, {"date": "2025-07-19", "total_transactions": 84, "total_amount": 14173.06, "avg_risk_score": 52.156785714285704, "fraud_transactions": 1, "fraud_amount": 53.52, "declined_transactions": 3, "fraud_rate": 0.011904761904761904, "fraud_rate_pct": 1.1904761904761905}, {"date": "2025-07-20", "total_transactions": 87, "total_amount": 21622.090000000007, "avg_risk_score": 50.64977011494251, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 7, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-07-21", "total_transactions": 87, "total_amount": 13936.390000000003, "avg_risk_score": 48.20218390804597, "fraud_transactions": 5, "fraud_amount": 655.86, "declined_transactions": 12, "fraud_rate": 0.05747126436781609, "fraud_rate_pct": 5.747126436781609}, {"date": "2025-07-22", "total_transactions": 88, "total_amount": 18376.37, "avg_risk_score": 45.51636363636363, "fraud_transactions": 1, "fraud_amount": 111.07, "declined_transactions": 11, "fraud_rate": 0.011363636363636364, "fraud_rate_pct": 1.1363636363636365}, {"date": "2025-07-23", "total_transactions": 82, "total_amount": 12308.580000000002, "avg_risk_score": 51.74780487804877, "fraud_transactions": 2, "fraud_amount": 265.13, "declined_transactions": 10, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-07-24", "total_transactions": 88, "total_amount": 14176.930000000004, "avg_risk_score": 48.97068181818184, "fraud_transactions": 1, "fraud_amount": 230.44, "declined_transactions": 8, "fraud_rate": 0.011363636363636364, "fraud_rate_pct": 1.1363636363636365}, {"date": "2025-07-25", "total_transactions": 74, "total_amount": 13398.790000000003, "avg_risk_score": 46.85405405405405, "fraud_transactions": 4, "fraud_amount": 586.92, "declined_transactions": 6, "fraud_rate": 0.05405405405405406, "fraud_rate_pct": 5.405405405405405}, {"date": "2025-07-26", "total_transactions": 68, "total_amount": 13481.439999999999, "avg_risk_score": 54.512058823529415, "fraud_transactions": 2, "fraud_amount": 278.88, "declined_transactions": 6, "fraud_rate": 0.029411764705882353, "fraud_rate_pct": 2.941176470588235}, {"date": "2025-07-27", "total_transactions": 63, "total_amount": 11729.520000000002, "avg_risk_score": 43.55984126984128, "fraud_transactions": 2, "fraud_amount": 1649.87, "declined_transactions": 6, "fraud_rate": 0.031746031746031744, "fraud_rate_pct": 3.1746031746031744}, {"date": "2025-07-28", "total_transactions": 68, "total_amount": 9937.390000000001, "avg_risk_score": 49.27191176470587, "fraud_transactions": 1, "fraud_amount": 5.0, "declined_transactions": 5, "fraud_rate": 0.014705882352941176, "fraud_rate_pct": 1.4705882352941175}, {"date": "2025-07-29", "total_transactions": 78, "total_amount": 16426.16, "avg_risk_score": 54.262564102564106, "fraud_transactions": 2, "fraud_amount": 54.24, "declined_transactions": 7, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-07-30", "total_transactions": 93, "total_amount": 17347.079999999998, "avg_risk_score": 51.55279569892473, "fraud_transactions": 1, "fraud_amount": 211.16, "declined_transactions": 12, "fraud_rate": 0.010752688172043012, "fraud_rate_pct": 1.0752688172043012}, {"date": "2025-07-31", "total_transactions": 72, "total_amount": 11051.379999999997, "avg_risk_score": 48.913055555555545, "fraud_transactions": 3, "fraud_amount": 499.13, "declined_transactions": 6, "fraud_rate": 0.041666666666666664, "fraud_rate_pct": 4.166666666666666}, {"date": "2025-08-01", "total_transactions": 71, "total_amount": 14731.250000000002, "avg_risk_score": 54.41014084507042, "fraud_transactions": 2, "fraud_amount": 200.59, "declined_transactions": 5, "fraud_rate": 0.028169014084507043, "fraud_rate_pct": 2.8169014084507045}, {"date": "2025-08-02", "total_transactions": 75, "total_amount": 11823.14, "avg_risk_score": 47.10746666666665, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-08-03", "total_transactions": 80, "total_amount": 16178.560000000003, "avg_risk_score": 47.53662500000001, "fraud_transactions": 3, "fraud_amount": 338.76, "declined_transactions": 10, "fraud_rate": 0.0375, "fraud_rate_pct": 3.75}, {"date": "2025-08-04", "total_transactions": 73, "total_amount": 12079.85, "avg_risk_score": 49.608219178082194, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 4, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-08-05", "total_transactions": 86, "total_amount": 19799.070000000003, "avg_risk_score": 54.378720930232554, "fraud_transactions": 3, "fraud_amount": 212.98000000000002, "declined_transactions": 9, "fraud_rate": 0.03488372093023256, "fraud_rate_pct": 3.488372093023256}, {"date": "2025-08-06", "total_transactions": 84, "total_amount": 17003.590000000004, "avg_risk_score": 54.333095238095254, "fraud_transactions": 1, "fraud_amount": 35.93, "declined_transactions": 5, "fraud_rate": 0.011904761904761904, "fraud_rate_pct": 1.1904761904761905}, {"date": "2025-08-07", "total_transactions": 79, "total_amount": 16182.989999999998, "avg_risk_score": 43.126582278481, "fraud_transactions": 1, "fraud_amount": 10.09, "declined_transactions": 9, "fraud_rate": 0.012658227848101266, "fraud_rate_pct": 1.2658227848101267}, {"date": "2025-08-08", "total_transactions": 66, "total_amount": 9103.69, "avg_risk_score": 52.44045454545453, "fraud_transactions": 2, "fraud_amount": 572.52, "declined_transactions": 11, "fraud_rate": 0.030303030303030304, "fraud_rate_pct": 3.0303030303030303}, {"date": "2025-08-09", "total_transactions": 86, "total_amount": 12618.249999999996, "avg_risk_score": 45.17709302325582, "fraud_transactions": 2, "fraud_amount": 194.89, "declined_transactions": 9, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-08-10", "total_transactions": 73, "total_amount": 12413.780000000002, "avg_risk_score": 49.88671232876712, "fraud_transactions": 4, "fraud_amount": 443.6, "declined_transactions": 6, "fraud_rate": 0.0547945205479452, "fraud_rate_pct": 5.47945205479452}, {"date": "2025-08-11", "total_transactions": 63, "total_amount": 12645.370000000004, "avg_risk_score": 49.594603174603165, "fraud_transactions": 1, "fraud_amount": 288.53, "declined_transactions": 2, "fraud_rate": 0.015873015873015872, "fraud_rate_pct": 1.5873015873015872}, {"date": "2025-08-12", "total_transactions": 74, "total_amount": 15575.47, "avg_risk_score": 54.73445945945945, "fraud_transactions": 3, "fraud_amount": 532.78, "declined_transactions": 7, "fraud_rate": 0.04054054054054054, "fraud_rate_pct": 4.054054054054054}, {"date": "2025-08-13", "total_transactions": 88, "total_amount": 15088.94, "avg_risk_score": 47.938863636363635, "fraud_transactions": 1, "fraud_amount": 441.77, "declined_transactions": 9, "fraud_rate": 0.011363636363636364, "fraud_rate_pct": 1.1363636363636365}, {"date": "2025-08-14", "total_transactions": 75, "total_amount": 12235.479999999998, "avg_risk_score": 51.727066666666666, "fraud_transactions": 1, "fraud_amount": 53.98, "declined_transactions": 5, "fraud_rate": 0.013333333333333334, "fraud_rate_pct": 1.3333333333333335}, {"date": "2025-08-15", "total_transactions": 78, "total_amount": 11392.31, "avg_risk_score": 48.9469230769231, "fraud_transactions": 2, "fraud_amount": 201.42, "declined_transactions": 7, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-08-16", "total_transactions": 71, "total_amount": 14225.240000000005, "avg_risk_score": 48.53450704225352, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-08-17", "total_transactions": 61, "total_amount": 6940.96, "avg_risk_score": 52.0244262295082, "fraud_transactions": 2, "fraud_amount": 146.95999999999998, "declined_transactions": 5, "fraud_rate": 0.03278688524590164, "fraud_rate_pct": 3.278688524590164}, {"date": "2025-08-18", "total_transactions": 90, "total_amount": 14125.169999999996, "avg_risk_score": 55.145, "fraud_transactions": 1, "fraud_amount": 42.03, "declined_transactions": 10, "fraud_rate": 0.011111111111111112, "fraud_rate_pct": 1.1111111111111112}, {"date": "2025-08-19", "total_transactions": 90, "total_amount": 12301.01, "avg_risk_score": 47.510999999999996, "fraud_transactions": 6, "fraud_amount": 891.8699999999999, "declined_transactions": 16, "fraud_rate": 0.06666666666666667, "fraud_rate_pct": 6.666666666666667}, {"date": "2025-08-20", "total_transactions": 89, "total_amount": 20041.250000000004, "avg_risk_score": 50.795393258426955, "fraud_transactions": 1, "fraud_amount": 878.81, "declined_transactions": 6, "fraud_rate": 0.011235955056179775, "fraud_rate_pct": 1.1235955056179776}, {"date": "2025-08-21", "total_transactions": 78, "total_amount": 10409.960000000001, "avg_risk_score": 49.1776923076923, "fraud_transactions": 4, "fraud_amount": 91.37, "declined_transactions": 13, "fraud_rate": 0.05128205128205128, "fraud_rate_pct": 5.128205128205128}, {"date": "2025-08-22", "total_transactions": 66, "total_amount": 11446.98, "avg_risk_score": 58.59439393939396, "fraud_transactions": 2, "fraud_amount": 1355.98, "declined_transactions": 5, "fraud_rate": 0.030303030303030304, "fraud_rate_pct": 3.0303030303030303}, {"date": "2025-08-23", "total_transactions": 84, "total_amount": 11645.820000000003, "avg_risk_score": 45.50380952380953, "fraud_transactions": 3, "fraud_amount": 358.1, "declined_transactions": 8, "fraud_rate": 0.03571428571428571, "fraud_rate_pct": 3.571428571428571}, {"date": "2025-08-24", "total_transactions": 87, "total_amount": 9105.230000000001, "avg_risk_score": 51.93137931034482, "fraud_transactions": 3, "fraud_amount": 270.98, "declined_transactions": 6, "fraud_rate": 0.034482758620689655, "fraud_rate_pct": 3.4482758620689653}, {"date": "2025-08-25", "total_transactions": 98, "total_amount": 22039.0, "avg_risk_score": 55.032244897959174, "fraud_transactions": 5, "fraud_amount": 1011.0, "declined_transactions": 11, "fraud_rate": 0.05102040816326531, "fraud_rate_pct": 5.1020408163265305}, {"date": "2025-08-26", "total_transactions": 85, "total_amount": 17290.139999999996, "avg_risk_score": 46.70764705882351, "fraud_transactions": 3, "fraud_amount": 284.86, "declined_transactions": 10, "fraud_rate": 0.03529411764705882, "fraud_rate_pct": 3.5294117647058822}, {"date": "2025-08-27", "total_transactions": 89, "total_amount": 13053.93, "avg_risk_score": 50.1908988764045, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 9, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-08-28", "total_transactions": 89, "total_amount": 14066.010000000006, "avg_risk_score": 51.62404494382024, "fraud_transactions": 3, "fraud_amount": 1491.35, "declined_transactions": 5, "fraud_rate": 0.033707865168539325, "fraud_rate_pct": 3.3707865168539324}, {"date": "2025-08-29", "total_transactions": 78, "total_amount": 8243.23, "avg_risk_score": 48.901282051282045, "fraud_transactions": 1, "fraud_amount": 34.85, "declined_transactions": 9, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-08-30", "total_transactions": 79, "total_amount": 8482.88, "avg_risk_score": 48.666962025316465, "fraud_transactions": 3, "fraud_amount": 512.41, "declined_transactions": 9, "fraud_rate": 0.0379746835443038, "fraud_rate_pct": 3.79746835443038}, {"date": "2025-08-31", "total_transactions": 87, "total_amount": 11998.14, "avg_risk_score": 52.13160919540232, "fraud_transactions": 4, "fraud_amount": 756.24, "declined_transactions": 8, "fraud_rate": 0.04597701149425287, "fraud_rate_pct": 4.597701149425287}, {"date": "2025-09-01", "total_transactions": 82, "total_amount": 19380.019999999997, "avg_risk_score": 45.965731707317076, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 8, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-09-02", "total_transactions": 94, "total_amount": 13611.260000000002, "avg_risk_score": 48.288297872340436, "fraud_transactions": 1, "fraud_amount": 38.09, "declined_transactions": 11, "fraud_rate": 0.010638297872340425, "fraud_rate_pct": 1.0638297872340425}, {"date": "2025-09-03", "total_transactions": 77, "total_amount": 13678.129999999996, "avg_risk_score": 49.42194805194806, "fraud_transactions": 4, "fraud_amount": 213.41000000000003, "declined_transactions": 11, "fraud_rate": 0.05194805194805195, "fraud_rate_pct": 5.194805194805195}, {"date": "2025-09-04", "total_transactions": 80, "total_amount": 11840.479999999992, "avg_risk_score": 53.03900000000001, "fraud_transactions": 1, "fraud_amount": 91.37, "declined_transactions": 11, "fraud_rate": 0.0125, "fraud_rate_pct": 1.25}, {"date": "2025-09-05", "total_transactions": 85, "total_amount": 13862.349999999999, "avg_risk_score": 53.49541176470589, "fraud_transactions": 3, "fraud_amount": 181.66, "declined_transactions": 10, "fraud_rate": 0.03529411764705882, "fraud_rate_pct": 3.5294117647058822}, {"date": "2025-09-06", "total_transactions": 85, "total_amount": 11594.740000000002, "avg_risk_score": 47.221294117647076, "fraud_transactions": 1, "fraud_amount": 60.29, "declined_transactions": 9, "fraud_rate": 0.011764705882352941, "fraud_rate_pct": 1.1764705882352942}, {"date": "2025-09-07", "total_transactions": 71, "total_amount": 9011.14, "avg_risk_score": 54.8611267605634, "fraud_transactions": 1, "fraud_amount": 773.81, "declined_transactions": 8, "fraud_rate": 0.014084507042253521, "fraud_rate_pct": 1.4084507042253522}, {"date": "2025-09-08", "total_transactions": 89, "total_amount": 14605.680000000002, "avg_risk_score": 46.98943820224719, "fraud_transactions": 5, "fraud_amount": 162.59, "declined_transactions": 8, "fraud_rate": 0.056179775280898875, "fraud_rate_pct": 5.617977528089887}, {"date": "2025-09-09", "total_transactions": 87, "total_amount": 11810.979999999998, "avg_risk_score": 53.20206896551726, "fraud_transactions": 1, "fraud_amount": 32.5, "declined_transactions": 8, "fraud_rate": 0.011494252873563218, "fraud_rate_pct": 1.1494252873563218}, {"date": "2025-09-10", "total_transactions": 74, "total_amount": 11640.390000000005, "avg_risk_score": 48.72283783783785, "fraud_transactions": 4, "fraud_amount": 592.99, "declined_transactions": 6, "fraud_rate": 0.05405405405405406, "fraud_rate_pct": 5.405405405405405}, {"date": "2025-09-11", "total_transactions": 78, "total_amount": 14477.329999999996, "avg_risk_score": 47.31346153846157, "fraud_transactions": 2, "fraud_amount": 95.44, "declined_transactions": 6, "fraud_rate": 0.02564102564102564, "fraud_rate_pct": 2.564102564102564}, {"date": "2025-09-12", "total_transactions": 84, "total_amount": 15897.759999999997, "avg_risk_score": 51.092857142857156, "fraud_transactions": 2, "fraud_amount": 242.1, "declined_transactions": 11, "fraud_rate": 0.023809523809523808, "fraud_rate_pct": 2.380952380952381}, {"date": "2025-09-13", "total_transactions": 62, "total_amount": 10569.960000000001, "avg_risk_score": 49.91548387096774, "fraud_transactions": 2, "fraud_amount": 182.72, "declined_transactions": 6, "fraud_rate": 0.03225806451612903, "fraud_rate_pct": 3.225806451612903}, {"date": "2025-09-14", "total_transactions": 95, "total_amount": 14273.290000000003, "avg_risk_score": 51.63073684210527, "fraud_transactions": 1, "fraud_amount": 9.05, "declined_transactions": 9, "fraud_rate": 0.010526315789473684, "fraud_rate_pct": 1.0526315789473684}, {"date": "2025-09-15", "total_transactions": 73, "total_amount": 9803.500000000002, "avg_risk_score": 45.46849315068494, "fraud_transactions": 3, "fraud_amount": 301.33, "declined_transactions": 7, "fraud_rate": 0.0410958904109589, "fraud_rate_pct": 4.10958904109589}, {"date": "2025-09-16", "total_transactions": 76, "total_amount": 15739.900000000003, "avg_risk_score": 49.684078947368405, "fraud_transactions": 1, "fraud_amount": 81.39, "declined_transactions": 5, "fraud_rate": 0.013157894736842105, "fraud_rate_pct": 1.3157894736842104}, {"date": "2025-09-17", "total_transactions": 81, "total_amount": 13248.79, "avg_risk_score": 51.90851851851851, "fraud_transactions": 1, "fraud_amount": 315.6, "declined_transactions": 8, "fraud_rate": 0.012345679012345678, "fraud_rate_pct": 1.2345679012345678}, {"date": "2025-09-18", "total_transactions": 80, "total_amount": 12468.450000000003, "avg_risk_score": 50.519625, "fraud_transactions": 1, "fraud_amount": 430.33, "declined_transactions": 9, "fraud_rate": 0.0125, "fraud_rate_pct": 1.25}, {"date": "2025-09-19", "total_transactions": 88, "total_amount": 11491.910000000005, "avg_risk_score": 50.063522727272726, "fraud_transactions": 2, "fraud_amount": 31.92, "declined_transactions": 8, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-09-20", "total_transactions": 96, "total_amount": 14784.74, "avg_risk_score": 47.253125000000004, "fraud_transactions": 3, "fraud_amount": 363.13, "declined_transactions": 7, "fraud_rate": 0.03125, "fraud_rate_pct": 3.125}, {"date": "2025-09-21", "total_transactions": 71, "total_amount": 19072.75999999999, "avg_risk_score": 56.87281690140845, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-09-22", "total_transactions": 95, "total_amount": 18834.420000000002, "avg_risk_score": 43.696000000000005, "fraud_transactions": 1, "fraud_amount": 149.18, "declined_transactions": 11, "fraud_rate": 0.010526315789473684, "fraud_rate_pct": 1.0526315789473684}, {"date": "2025-09-23", "total_transactions": 72, "total_amount": 14498.539999999999, "avg_risk_score": 49.503888888888895, "fraud_transactions": 1, "fraud_amount": 34.51, "declined_transactions": 7, "fraud_rate": 0.013888888888888888, "fraud_rate_pct": 1.3888888888888888}, {"date": "2025-09-24", "total_transactions": 79, "total_amount": 13396.110000000004, "avg_risk_score": 51.8979746835443, "fraud_transactions": 3, "fraud_amount": 995.9799999999999, "declined_transactions": 7, "fraud_rate": 0.0379746835443038, "fraud_rate_pct": 3.79746835443038}, {"date": "2025-09-25", "total_transactions": 87, "total_amount": 32959.899999999994, "avg_risk_score": 53.27333333333334, "fraud_transactions": 1, "fraud_amount": 155.0, "declined_transactions": 9, "fraud_rate": 0.011494252873563218, "fraud_rate_pct": 1.1494252873563218}, {"date": "2025-09-26", "total_transactions": 100, "total_amount": 14955.070000000003, "avg_risk_score": 50.451600000000035, "fraud_transactions": 1, "fraud_amount": 115.88, "declined_transactions": 8, "fraud_rate": 0.01, "fraud_rate_pct": 1.0}, {"date": "2025-09-27", "total_transactions": 85, "total_amount": 12270.1, "avg_risk_score": 50.25729411764708, "fraud_transactions": 1, "fraud_amount": 56.51, "declined_transactions": 6, "fraud_rate": 0.011764705882352941, "fraud_rate_pct": 1.1764705882352942}, {"date": "2025-09-28", "total_transactions": 78, "total_amount": 12438.739999999998, "avg_risk_score": 50.27910256410255, "fraud_transactions": 1, "fraud_amount": 29.6, "declined_transactions": 6, "fraud_rate": 0.01282051282051282, "fraud_rate_pct": 1.282051282051282}, {"date": "2025-09-29", "total_transactions": 70, "total_amount": 10881.940000000002, "avg_risk_score": 50.56471428571429, "fraud_transactions": 3, "fraud_amount": 146.10000000000002, "declined_transactions": 9, "fraud_rate": 0.04285714285714286, "fraud_rate_pct": 4.285714285714286}, {"date": "2025-09-30", "total_transactions": 77, "total_amount": 10711.180000000002, "avg_risk_score": 54.793896103896095, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 4, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-10-01", "total_transactions": 79, "total_amount": 13825.050000000001, "avg_risk_score": 45.84113924050633, "fraud_transactions": 4, "fraud_amount": 438.51000000000005, "declined_transactions": 11, "fraud_rate": 0.05063291139240506, "fraud_rate_pct": 5.063291139240507}, {"date": "2025-10-02", "total_transactions": 93, "total_amount": 13253.559999999992, "avg_risk_score": 51.19806451612905, "fraud_transactions": 3, "fraud_amount": 930.8000000000001, "declined_transactions": 15, "fraud_rate": 0.03225806451612903, "fraud_rate_pct": 3.225806451612903}, {"date": "2025-10-03", "total_transactions": 79, "total_amount": 14005.110000000002, "avg_risk_score": 50.142911392405075, "fraud_transactions": 1, "fraud_amount": 27.47, "declined_transactions": 4, "fraud_rate": 0.012658227848101266, "fraud_rate_pct": 1.2658227848101267}, {"date": "2025-10-04", "total_transactions": 85, "total_amount": 18005.48, "avg_risk_score": 50.410588235294114, "fraud_transactions": 2, "fraud_amount": 230.2, "declined_transactions": 8, "fraud_rate": 0.023529411764705882, "fraud_rate_pct": 2.3529411764705883}, {"date": "2025-10-05", "total_transactions": 91, "total_amount": 11575.510000000002, "avg_risk_score": 48.7568131868132, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 10, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-10-06", "total_transactions": 75, "total_amount": 11662.649999999998, "avg_risk_score": 55.863599999999984, "fraud_transactions": 1, "fraud_amount": 79.36, "declined_transactions": 2, "fraud_rate": 0.013333333333333334, "fraud_rate_pct": 1.3333333333333335}, {"date": "2025-10-07", "total_transactions": 58, "total_amount": 6485.57, "avg_risk_score": 50.81517241379309, "fraud_transactions": 1, "fraud_amount": 26.85, "declined_transactions": 6, "fraud_rate": 0.017241379310344827, "fraud_rate_pct": 1.7241379310344827}, {"date": "2025-10-08", "total_transactions": 110, "total_amount": 20174.94000000001, "avg_risk_score": 47.492454545454564, "fraud_transactions": 5, "fraud_amount": 657.8499999999999, "declined_transactions": 14, "fraud_rate": 0.045454545454545456, "fraud_rate_pct": 4.545454545454546}, {"date": "2025-10-09", "total_transactions": 85, "total_amount": 11261.840000000002, "avg_risk_score": 55.04999999999999, "fraud_transactions": 1, "fraud_amount": 54.26, "declined_transactions": 6, "fraud_rate": 0.011764705882352941, "fraud_rate_pct": 1.1764705882352942}, {"date": "2025-10-10", "total_transactions": 84, "total_amount": 12081.35, "avg_risk_score": 53.62238095238094, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 4, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-10-11", "total_transactions": 76, "total_amount": 10787.249999999996, "avg_risk_score": 51.870394736842094, "fraud_transactions": 4, "fraud_amount": 597.9599999999999, "declined_transactions": 7, "fraud_rate": 0.05263157894736842, "fraud_rate_pct": 5.263157894736842}, {"date": "2025-10-12", "total_transactions": 88, "total_amount": 14308.980000000003, "avg_risk_score": 47.96147727272727, "fraud_transactions": 2, "fraud_amount": 134.29999999999998, "declined_transactions": 9, "fraud_rate": 0.022727272727272728, "fraud_rate_pct": 2.272727272727273}, {"date": "2025-10-13", "total_transactions": 82, "total_amount": 21290.670000000002, "avg_risk_score": 51.27390243902439, "fraud_transactions": 2, "fraud_amount": 144.41, "declined_transactions": 9, "fraud_rate": 0.024390243902439025, "fraud_rate_pct": 2.4390243902439024}, {"date": "2025-10-14", "total_transactions": 89, "total_amount": 15987.790000000003, "avg_risk_score": 53.130561797752804, "fraud_transactions": 5, "fraud_amount": 1309.32, "declined_transactions": 15, "fraud_rate": 0.056179775280898875, "fraud_rate_pct": 5.617977528089887}, {"date": "2025-10-15", "total_transactions": 95, "total_amount": 14037.589999999998, "avg_risk_score": 59.010210526315774, "fraud_transactions": 1, "fraud_amount": 152.56, "declined_transactions": 10, "fraud_rate": 0.010526315789473684, "fraud_rate_pct": 1.0526315789473684}, {"date": "2025-10-16", "total_transactions": 84, "total_amount": 21064.61, "avg_risk_score": 46.959880952380956, "fraud_transactions": 1, "fraud_amount": 39.74, "declined_transactions": 9, "fraud_rate": 0.011904761904761904, "fraud_rate_pct": 1.1904761904761905}, {"date": "2025-10-17", "total_transactions": 76, "total_amount": 21859.789999999997, "avg_risk_score": 53.399868421052616, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 8, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-10-18", "total_transactions": 92, "total_amount": 12571.699999999997, "avg_risk_score": 49.455108695652186, "fraud_transactions": 4, "fraud_amount": 603.72, "declined_transactions": 11, "fraud_rate": 0.043478260869565216, "fraud_rate_pct": 4.3478260869565215}, {"date": "2025-10-19", "total_transactions": 96, "total_amount": 11152.449999999997, "avg_risk_score": 50.576354166666675, "fraud_transactions": 1, "fraud_amount": 13.29, "declined_transactions": 10, "fraud_rate": 0.010416666666666666, "fraud_rate_pct": 1.0416666666666665}, {"date": "2025-10-20", "total_transactions": 87, "total_amount": 16765.689999999995, "avg_risk_score": 53.83839080459767, "fraud_transactions": 1, "fraud_amount": 136.11, "declined_transactions": 10, "fraud_rate": 0.011494252873563218, "fraud_rate_pct": 1.1494252873563218}, {"date": "2025-10-21", "total_transactions": 76, "total_amount": 15700.869999999999, "avg_risk_score": 40.80736842105264, "fraud_transactions": 1, "fraud_amount": 83.29, "declined_transactions": 8, "fraud_rate": 0.013157894736842105, "fraud_rate_pct": 1.3157894736842104}, {"date": "2025-10-22", "total_transactions": 85, "total_amount": 17946.04, "avg_risk_score": 50.852117647058826, "fraud_transactions": 3, "fraud_amount": 94.11, "declined_transactions": 12, "fraud_rate": 0.03529411764705882, "fraud_rate_pct": 3.5294117647058822}, {"date": "2025-10-23", "total_transactions": 89, "total_amount": 14867.329999999998, "avg_risk_score": 53.66471910112358, "fraud_transactions": 4, "fraud_amount": 205.87, "declined_transactions": 8, "fraud_rate": 0.0449438202247191, "fraud_rate_pct": 4.49438202247191}, {"date": "2025-10-24", "total_transactions": 77, "total_amount": 14221.159999999993, "avg_risk_score": 46.17792207792206, "fraud_transactions": 1, "fraud_amount": 1196.18, "declined_transactions": 5, "fraud_rate": 0.012987012987012988, "fraud_rate_pct": 1.2987012987012987}, {"date": "2025-10-25", "total_transactions": 64, "total_amount": 9155.550000000001, "avg_risk_score": 51.110000000000014, "fraud_transactions": 2, "fraud_amount": 82.61, "declined_transactions": 9, "fraud_rate": 0.03125, "fraud_rate_pct": 3.125}, {"date": "2025-10-26", "total_transactions": 80, "total_amount": 15167.730000000003, "avg_risk_score": 46.300124999999994, "fraud_transactions": 2, "fraud_amount": 229.14000000000001, "declined_transactions": 7, "fraud_rate": 0.025, "fraud_rate_pct": 2.5}, {"date": "2025-10-27", "total_transactions": 81, "total_amount": 14886.789999999997, "avg_risk_score": 48.008395061728386, "fraud_transactions": 2, "fraud_amount": 311.85, "declined_transactions": 5, "fraud_rate": 0.024691358024691357, "fraud_rate_pct": 2.4691358024691357}, {"date": "2025-10-28", "total_transactions": 73, "total_amount": 10356.099999999993, "avg_risk_score": 47.71328767123288, "fraud_transactions": 2, "fraud_amount": 66.0, "declined_transactions": 10, "fraud_rate": 0.0273972602739726, "fraud_rate_pct": 2.73972602739726}, {"date": "2025-10-29", "total_transactions": 83, "total_amount": 16443.190000000002, "avg_risk_score": 51.188433734939785, "fraud_transactions": 2, "fraud_amount": 475.44, "declined_transactions": 9, "fraud_rate": 0.024096385542168676, "fraud_rate_pct": 2.4096385542168677}, {"date": "2025-10-30", "total_transactions": 87, "total_amount": 14783.770000000002, "avg_risk_score": 46.997011494252874, "fraud_transactions": 2, "fraud_amount": 1093.52, "declined_transactions": 10, "fraud_rate": 0.022988505747126436, "fraud_rate_pct": 2.2988505747126435}, {"date": "2025-10-31", "total_transactions": 86, "total_amount": 10225.250000000002, "avg_risk_score": 50.20500000000001, "fraud_transactions": 2, "fraud_amount": 27.14, "declined_transactions": 11, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-11-01", "total_transactions": 76, "total_amount": 18144.600000000002, "avg_risk_score": 48.439078947368436, "fraud_transactions": 7, "fraud_amount": 1989.11, "declined_transactions": 11, "fraud_rate": 0.09210526315789473, "fraud_rate_pct": 9.210526315789473}, {"date": "2025-11-02", "total_transactions": 88, "total_amount": 15041.569999999998, "avg_risk_score": 49.78965909090912, "fraud_transactions": 4, "fraud_amount": 463.61, "declined_transactions": 10, "fraud_rate": 0.045454545454545456, "fraud_rate_pct": 4.545454545454546}, {"date": "2025-11-03", "total_transactions": 73, "total_amount": 13881.629999999997, "avg_risk_score": 49.30506849315069, "fraud_transactions": 2, "fraud_amount": 189.54000000000002, "declined_transactions": 10, "fraud_rate": 0.0273972602739726, "fraud_rate_pct": 2.73972602739726}, {"date": "2025-11-04", "total_transactions": 66, "total_amount": 13157.240000000003, "avg_risk_score": 50.79666666666669, "fraud_transactions": 1, "fraud_amount": 18.55, "declined_transactions": 5, "fraud_rate": 0.015151515151515152, "fraud_rate_pct": 1.5151515151515151}, {"date": "2025-11-05", "total_transactions": 87, "total_amount": 14520.769999999999, "avg_risk_score": 50.85436781609195, "fraud_transactions": 4, "fraud_amount": 286.87, "declined_transactions": 17, "fraud_rate": 0.04597701149425287, "fraud_rate_pct": 4.597701149425287}, {"date": "2025-11-06", "total_transactions": 72, "total_amount": 10521.299999999997, "avg_risk_score": 49.06222222222223, "fraud_transactions": 4, "fraud_amount": 972.8599999999999, "declined_transactions": 7, "fraud_rate": 0.05555555555555555, "fraud_rate_pct": 5.555555555555555}, {"date": "2025-11-07", "total_transactions": 85, "total_amount": 15625.049999999994, "avg_risk_score": 46.28717647058824, "fraud_transactions": 1, "fraud_amount": 1523.48, "declined_transactions": 9, "fraud_rate": 0.011764705882352941, "fraud_rate_pct": 1.1764705882352942}, {"date": "2025-11-08", "total_transactions": 73, "total_amount": 9395.289999999997, "avg_risk_score": 50.22684931506847, "fraud_transactions": 2, "fraud_amount": 337.32, "declined_transactions": 11, "fraud_rate": 0.0273972602739726, "fraud_rate_pct": 2.73972602739726}, {"date": "2025-11-09", "total_transactions": 74, "total_amount": 17151.6, "avg_risk_score": 56.76729729729732, "fraud_transactions": 5, "fraud_amount": 4829.72, "declined_transactions": 9, "fraud_rate": 0.06756756756756757, "fraud_rate_pct": 6.756756756756757}, {"date": "2025-11-10", "total_transactions": 93, "total_amount": 20773.510000000006, "avg_risk_score": 42.47924731182796, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 8, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-11-11", "total_transactions": 95, "total_amount": 14309.789999999995, "avg_risk_score": 46.19663157894738, "fraud_transactions": 3, "fraud_amount": 371.95, "declined_transactions": 6, "fraud_rate": 0.031578947368421054, "fraud_rate_pct": 3.1578947368421053}, {"date": "2025-11-12", "total_transactions": 86, "total_amount": 23848.879999999994, "avg_risk_score": 49.119186046511636, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 5, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-11-13", "total_transactions": 80, "total_amount": 16823.24000000001, "avg_risk_score": 44.913374999999995, "fraud_transactions": 2, "fraud_amount": 398.82, "declined_transactions": 13, "fraud_rate": 0.025, "fraud_rate_pct": 2.5}, {"date": "2025-11-14", "total_transactions": 68, "total_amount": 10914.02, "avg_risk_score": 56.387647058823546, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-11-15", "total_transactions": 89, "total_amount": 15476.059999999998, "avg_risk_score": 50.61483146067415, "fraud_transactions": 1, "fraud_amount": 253.15, "declined_transactions": 10, "fraud_rate": 0.011235955056179775, "fraud_rate_pct": 1.1235955056179776}, {"date": "2025-11-16", "total_transactions": 69, "total_amount": 10619.480000000001, "avg_risk_score": 50.76144927536232, "fraud_transactions": 1, "fraud_amount": 38.43, "declined_transactions": 5, "fraud_rate": 0.014492753623188406, "fraud_rate_pct": 1.4492753623188406}, {"date": "2025-11-17", "total_transactions": 90, "total_amount": 14611.590000000002, "avg_risk_score": 50.76988888888891, "fraud_transactions": 1, "fraud_amount": 33.41, "declined_transactions": 11, "fraud_rate": 0.011111111111111112, "fraud_rate_pct": 1.1111111111111112}, {"date": "2025-11-18", "total_transactions": 95, "total_amount": 16527.550000000003, "avg_risk_score": 47.80284210526316, "fraud_transactions": 1, "fraud_amount": 54.9, "declined_transactions": 5, "fraud_rate": 0.010526315789473684, "fraud_rate_pct": 1.0526315789473684}, {"date": "2025-11-19", "total_transactions": 81, "total_amount": 16093.72, "avg_risk_score": 47.230370370370366, "fraud_transactions": 4, "fraud_amount": 384.41999999999996, "declined_transactions": 13, "fraud_rate": 0.04938271604938271, "fraud_rate_pct": 4.938271604938271}, {"date": "2025-11-20", "total_transactions": 83, "total_amount": 12596.07, "avg_risk_score": 53.436987951807225, "fraud_transactions": 4, "fraud_amount": 699.85, "declined_transactions": 8, "fraud_rate": 0.04819277108433735, "fraud_rate_pct": 4.819277108433735}, {"date": "2025-11-21", "total_transactions": 76, "total_amount": 10432.140000000001, "avg_risk_score": 49.80026315789475, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-11-22", "total_transactions": 91, "total_amount": 21514.200000000004, "avg_risk_score": 54.549560439560445, "fraud_transactions": 1, "fraud_amount": 15.19, "declined_transactions": 4, "fraud_rate": 0.01098901098901099, "fraud_rate_pct": 1.098901098901099}, {"date": "2025-11-23", "total_transactions": 97, "total_amount": 11865.470000000005, "avg_risk_score": 51.53896907216494, "fraud_transactions": 3, "fraud_amount": 200.59000000000003, "declined_transactions": 14, "fraud_rate": 0.030927835051546393, "fraud_rate_pct": 3.0927835051546393}, {"date": "2025-11-24", "total_transactions": 77, "total_amount": 21576.480000000007, "avg_risk_score": 48.682987012987006, "fraud_transactions": 1, "fraud_amount": 37.46, "declined_transactions": 8, "fraud_rate": 0.012987012987012988, "fraud_rate_pct": 1.2987012987012987}, {"date": "2025-11-25", "total_transactions": 62, "total_amount": 13210.669999999996, "avg_risk_score": 46.06935483870968, "fraud_transactions": 1, "fraud_amount": 82.55, "declined_transactions": 5, "fraud_rate": 0.016129032258064516, "fraud_rate_pct": 1.6129032258064515}, {"date": "2025-11-26", "total_transactions": 80, "total_amount": 17197.570000000003, "avg_risk_score": 49.38237499999998, "fraud_transactions": 1, "fraud_amount": 12.0, "declined_transactions": 10, "fraud_rate": 0.0125, "fraud_rate_pct": 1.25}, {"date": "2025-11-27", "total_transactions": 97, "total_amount": 12099.449999999995, "avg_risk_score": 47.609793814433, "fraud_transactions": 1, "fraud_amount": 149.39, "declined_transactions": 9, "fraud_rate": 0.010309278350515464, "fraud_rate_pct": 1.0309278350515463}, {"date": "2025-11-28", "total_transactions": 89, "total_amount": 16404.67, "avg_risk_score": 42.08404494382022, "fraud_transactions": 2, "fraud_amount": 231.85, "declined_transactions": 9, "fraud_rate": 0.02247191011235955, "fraud_rate_pct": 2.247191011235955}, {"date": "2025-11-29", "total_transactions": 77, "total_amount": 20092.72, "avg_risk_score": 50.859220779220784, "fraud_transactions": 5, "fraud_amount": 257.25, "declined_transactions": 5, "fraud_rate": 0.06493506493506493, "fraud_rate_pct": 6.493506493506493}, {"date": "2025-11-30", "total_transactions": 82, "total_amount": 17060.82, "avg_risk_score": 48.666341463414625, "fraud_transactions": 1, "fraud_amount": 47.47, "declined_transactions": 6, "fraud_rate": 0.012195121951219513, "fraud_rate_pct": 1.2195121951219512}, {"date": "2025-12-01", "total_transactions": 95, "total_amount": 15644.569999999996, "avg_risk_score": 44.327052631578944, "fraud_transactions": 4, "fraud_amount": 112.37, "declined_transactions": 8, "fraud_rate": 0.042105263157894736, "fraud_rate_pct": 4.2105263157894735}, {"date": "2025-12-02", "total_transactions": 67, "total_amount": 15379.610000000004, "avg_risk_score": 54.20746268656716, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-12-03", "total_transactions": 86, "total_amount": 14522.810000000003, "avg_risk_score": 49.14197674418604, "fraud_transactions": 2, "fraud_amount": 176.35000000000002, "declined_transactions": 6, "fraud_rate": 0.023255813953488372, "fraud_rate_pct": 2.3255813953488373}, {"date": "2025-12-04", "total_transactions": 77, "total_amount": 11650.72, "avg_risk_score": 52.78714285714283, "fraud_transactions": 3, "fraud_amount": 854.96, "declined_transactions": 7, "fraud_rate": 0.03896103896103896, "fraud_rate_pct": 3.896103896103896}, {"date": "2025-12-05", "total_transactions": 74, "total_amount": 8313.2, "avg_risk_score": 55.865, "fraud_transactions": 2, "fraud_amount": 107.19, "declined_transactions": 6, "fraud_rate": 0.02702702702702703, "fraud_rate_pct": 2.7027027027027026}, {"date": "2025-12-06", "total_transactions": 82, "total_amount": 12566.920000000006, "avg_risk_score": 52.63780487804875, "fraud_transactions": 3, "fraud_amount": 1318.3999999999999, "declined_transactions": 7, "fraud_rate": 0.036585365853658534, "fraud_rate_pct": 3.6585365853658534}, {"date": "2025-12-07", "total_transactions": 72, "total_amount": 9805.259999999995, "avg_risk_score": 48.47805555555554, "fraud_transactions": 2, "fraud_amount": 141.12, "declined_transactions": 8, "fraud_rate": 0.027777777777777776, "fraud_rate_pct": 2.7777777777777777}, {"date": "2025-12-08", "total_transactions": 79, "total_amount": 13873.359999999997, "avg_risk_score": 52.35746835443039, "fraud_transactions": 1, "fraud_amount": 33.45, "declined_transactions": 12, "fraud_rate": 0.012658227848101266, "fraud_rate_pct": 1.2658227848101267}, {"date": "2025-12-09", "total_transactions": 93, "total_amount": 15225.070000000003, "avg_risk_score": 44.42763440860215, "fraud_transactions": 3, "fraud_amount": 347.7, "declined_transactions": 10, "fraud_rate": 0.03225806451612903, "fraud_rate_pct": 3.225806451612903}, {"date": "2025-12-10", "total_transactions": 68, "total_amount": 11247.439999999999, "avg_risk_score": 54.27676470588234, "fraud_transactions": 3, "fraud_amount": 399.62, "declined_transactions": 10, "fraud_rate": 0.04411764705882353, "fraud_rate_pct": 4.411764705882353}, {"date": "2025-12-11", "total_transactions": 84, "total_amount": 10806.629999999997, "avg_risk_score": 52.873690476190504, "fraud_transactions": 2, "fraud_amount": 494.98, "declined_transactions": 7, "fraud_rate": 0.023809523809523808, "fraud_rate_pct": 2.380952380952381}, {"date": "2025-12-12", "total_transactions": 94, "total_amount": 16227.269999999999, "avg_risk_score": 52.137446808510646, "fraud_transactions": 1, "fraud_amount": 13.27, "declined_transactions": 11, "fraud_rate": 0.010638297872340425, "fraud_rate_pct": 1.0638297872340425}, {"date": "2025-12-13", "total_transactions": 91, "total_amount": 17817.66, "avg_risk_score": 50.18615384615383, "fraud_transactions": 4, "fraud_amount": 770.8199999999999, "declined_transactions": 11, "fraud_rate": 0.04395604395604396, "fraud_rate_pct": 4.395604395604396}, {"date": "2025-12-14", "total_transactions": 92, "total_amount": 14189.560000000003, "avg_risk_score": 48.72923913043479, "fraud_transactions": 3, "fraud_amount": 158.07999999999998, "declined_transactions": 10, "fraud_rate": 0.03260869565217391, "fraud_rate_pct": 3.260869565217391}, {"date": "2025-12-15", "total_transactions": 83, "total_amount": 13725.23, "avg_risk_score": 51.56433734939759, "fraud_transactions": 1, "fraud_amount": 40.67, "declined_transactions": 4, "fraud_rate": 0.012048192771084338, "fraud_rate_pct": 1.2048192771084338}, {"date": "2025-12-16", "total_transactions": 89, "total_amount": 15766.590000000002, "avg_risk_score": 49.84359550561798, "fraud_transactions": 2, "fraud_amount": 640.84, "declined_transactions": 9, "fraud_rate": 0.02247191011235955, "fraud_rate_pct": 2.247191011235955}, {"date": "2025-12-17", "total_transactions": 70, "total_amount": 10551.13, "avg_risk_score": 54.900714285714294, "fraud_transactions": 3, "fraud_amount": 398.65, "declined_transactions": 8, "fraud_rate": 0.04285714285714286, "fraud_rate_pct": 4.285714285714286}, {"date": "2025-12-18", "total_transactions": 64, "total_amount": 9450.53, "avg_risk_score": 49.62500000000001, "fraud_transactions": 4, "fraud_amount": 374.24, "declined_transactions": 10, "fraud_rate": 0.0625, "fraud_rate_pct": 6.25}, {"date": "2025-12-19", "total_transactions": 82, "total_amount": 17311.02, "avg_risk_score": 51.45865853658538, "fraud_transactions": 5, "fraud_amount": 253.57, "declined_transactions": 10, "fraud_rate": 0.06097560975609756, "fraud_rate_pct": 6.097560975609756}, {"date": "2025-12-20", "total_transactions": 67, "total_amount": 8965.930000000002, "avg_risk_score": 46.864179104477614, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 6, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-12-21", "total_transactions": 73, "total_amount": 10262.759999999997, "avg_risk_score": 45.692876712328776, "fraud_transactions": 1, "fraud_amount": 40.09, "declined_transactions": 6, "fraud_rate": 0.0136986301369863, "fraud_rate_pct": 1.36986301369863}, {"date": "2025-12-22", "total_transactions": 97, "total_amount": 13624.960000000006, "avg_risk_score": 50.83783505154643, "fraud_transactions": 2, "fraud_amount": 46.06, "declined_transactions": 9, "fraud_rate": 0.020618556701030927, "fraud_rate_pct": 2.0618556701030926}, {"date": "2025-12-23", "total_transactions": 84, "total_amount": 15548.480000000001, "avg_risk_score": 47.35000000000001, "fraud_transactions": 5, "fraud_amount": 509.56, "declined_transactions": 9, "fraud_rate": 0.05952380952380952, "fraud_rate_pct": 5.952380952380952}, {"date": "2025-12-24", "total_transactions": 90, "total_amount": 15262.019999999999, "avg_risk_score": 53.320000000000014, "fraud_transactions": 1, "fraud_amount": 608.4, "declined_transactions": 7, "fraud_rate": 0.011111111111111112, "fraud_rate_pct": 1.1111111111111112}, {"date": "2025-12-25", "total_transactions": 89, "total_amount": 13112.440000000006, "avg_risk_score": 55.752808988764045, "fraud_transactions": 2, "fraud_amount": 93.97, "declined_transactions": 8, "fraud_rate": 0.02247191011235955, "fraud_rate_pct": 2.247191011235955}, {"date": "2025-12-26", "total_transactions": 99, "total_amount": 14933.89, "avg_risk_score": 51.58636363636365, "fraud_transactions": 4, "fraud_amount": 301.47, "declined_transactions": 15, "fraud_rate": 0.04040404040404041, "fraud_rate_pct": 4.040404040404041}, {"date": "2025-12-27", "total_transactions": 76, "total_amount": 9880.65, "avg_risk_score": 53.08934210526316, "fraud_transactions": 2, "fraud_amount": 286.44, "declined_transactions": 6, "fraud_rate": 0.02631578947368421, "fraud_rate_pct": 2.631578947368421}, {"date": "2025-12-28", "total_transactions": 92, "total_amount": 18282.639999999996, "avg_risk_score": 46.628152173913044, "fraud_transactions": 1, "fraud_amount": 27.88, "declined_transactions": 10, "fraud_rate": 0.010869565217391304, "fraud_rate_pct": 1.0869565217391304}, {"date": "2025-12-29", "total_transactions": 86, "total_amount": 16454.309999999998, "avg_risk_score": 52.273372093023255, "fraud_transactions": 0, "fraud_amount": 0.0, "declined_transactions": 15, "fraud_rate": 0.0, "fraud_rate_pct": 0.0}, {"date": "2025-12-30", "total_transactions": 92, "total_amount": 12021.479999999998, "avg_risk_score": 50.35576086956521, "fraud_transactions": 2, "fraud_amount": 165.31, "declined_transactions": 9, "fraud_rate": 0.021739130434782608, "fraud_rate_pct": 2.1739130434782608}, {"date": "2025-12-31", "total_transactions": 89, "total_amount": 11954.399999999998, "avg_risk_score": 47.72224719101121, "fraud_transactions": 4, "fraud_amount": 403.34999999999997, "declined_transactions": 12, "fraud_rate": 0.0449438202247191, "fraud_rate_pct": 4.49438202247191}], "category": [{"merchant_category": "alimentacao", "total_transactions": 5976, "total_amount": 1055465.6499999992, "avg_amount": 176.6174113119142, "avg_risk_score": 49.685634203480475, "fraud_transactions": 138, "fraud_amount": 21017.000000000004, "declined_transactions": 585, "fraud_rate": 0.023092369477911646, "declined_rate": 0.09789156626506024, "fraud_rate_pct": 2.3092369477911645}, {"merchant_category": "viagem", "total_transactions": 3010, "total_amount": 545957.3099999997, "avg_amount": 181.38116611295672, "avg_risk_score": 50.82484717607971, "fraud_transactions": 160, "fraud_amount": 25966.400000000012, "declined_transactions": 365, "fraud_rate": 0.053156146179401995, "declined_rate": 0.1212624584717608, "fraud_rate_pct": 5.3156146179401995}, {"merchant_category": "varejo", "total_transactions": 9047, "total_amount": 1524470.1300000066, "avg_amount": 168.50559633027595, "avg_risk_score": 50.312765557643445, "fraud_transactions": 203, "fraud_amount": 34870.54000000001, "declined_transactions": 889, "fraud_rate": 0.022438377362661657, "declined_rate": 0.09826461810544931, "fraud_rate_pct": 2.2438377362661655}, {"merchant_category": "servicos", "total_transactions": 4576, "total_amount": 831119.260000001, "avg_amount": 181.62571241258763, "avg_risk_score": 49.92248907342647, "fraud_transactions": 90, "fraud_amount": 14197.179999999998, "declined_transactions": 482, "fraud_rate": 0.019667832167832168, "declined_rate": 0.10533216783216784, "fraud_rate_pct": 1.9667832167832169}, {"merchant_category": "saude", "total_transactions": 2951, "total_amount": 528445.8800000004, "avg_amount": 179.0734937309388, "avg_risk_score": 50.02344967807517, "fraud_transactions": 73, "fraud_amount": 11141.530000000002, "declined_transactions": 304, "fraud_rate": 0.024737377160284648, "declined_rate": 0.10301592680447307, "fraud_rate_pct": 2.473737716028465}, {"merchant_category": "eletronico", "total_transactions": 4440, "total_amount": 722385.2699999991, "avg_amount": 162.69938513513492, "avg_risk_score": 50.01059459459453, "fraud_transactions": 87, "fraud_amount": 12175.279999999993, "declined_transactions": 427, "fraud_rate": 0.019594594594594596, "declined_rate": 0.09617117117117117, "fraud_rate_pct": 1.9594594594594597}], "risk": [{"risk_level": "medio", "total_transactions": 11874, "total_amount": 2074461.7200000088, "avg_risk_score": 50.00684689236999, "fraud_transactions": 263, "fraud_amount": 33547.600000000006, "fraud_rate": 0.022149233619673237, "fraud_rate_pct": 2.214923361967324}, {"risk_level": "alto", "total_transactions": 9091, "total_amount": 1547624.109999998, "avg_risk_score": 84.95472885271157, "fraud_transactions": 276, "fraud_amount": 47557.97, "fraud_rate": 0.03035969640303597, "fraud_rate_pct": 3.035969640303597}, {"risk_level": "baixo", "total_transactions": 9035, "total_amount": 1585757.6700000006, "avg_risk_score": 15.173275041505258, "fraud_transactions": 212, "fraud_amount": 38262.35999999997, "fraud_rate": 0.023464305478693968, "fraud_rate_pct": 2.3464305478693968}]};
+
+
+// ============================================================
+// FORMATAÇÃO
+// ============================================================
+
+function formatNumber(value) {
+
+    return new Intl.NumberFormat(
+        'pt-BR'
+    ).format(value);
+
+}
+
+
+function formatCurrency(value) {
+
+    return new Intl.NumberFormat(
+        'pt-BR',
+        {
+            style: 'currency',
+            currency: 'BRL'
+        }
+    ).format(value);
+
+}
+
+
+function formatPercent(value) {
+
+    return new Intl.NumberFormat(
+        'pt-BR',
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    ).format(value) + '%';
+
+}
+
+
+// ============================================================
+// FILTROS
+// ============================================================
+
+function populateFilters() {
+
+    const channelFilter =
+        document.getElementById(
+            'channelFilter'
+        );
+
+    const riskFilter =
+        document.getElementById(
+            'riskFilter'
+        );
+
+
+    const channels = [
+        ...new Set(
+            DATA.channel.map(
+                row => row.channel
+            )
+        )
+    ].sort();
+
+
+    const risks = [
+        ...new Set(
+            DATA.risk.map(
+                row => row.risk_level
+            )
+        )
+    ].sort();
+
+
+    channels.forEach(channel => {
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value = channel;
+        option.textContent =
+            channel.toUpperCase();
+
+        channelFilter.appendChild(
+            option
+        );
+
+    });
+
+
+    risks.forEach(risk => {
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value = risk;
+        option.textContent = risk;
+
+        riskFilter.appendChild(
+            option
+        );
+
+    });
+
+}
+
+
+// ============================================================
+// KPIs
+// ============================================================
+
+function updateKPIs(
+    channelFilter,
+    riskFilter
+) {
+
+    let channelData =
+        DATA.channel;
+
+
+    // --------------------------------------------------------
+    // Filtro por canal
+    // --------------------------------------------------------
+
+    if (channelFilter !== 'ALL') {
+
+        channelData =
+            channelData.filter(
+                row =>
+                    row.channel === channelFilter
+            );
+
+    }
+
+
+    // --------------------------------------------------------
+    // Cálculo dos KPIs
+    // --------------------------------------------------------
+
+    let transactions = 0;
+    let fraud = 0;
+    let fraudAmount = 0;
+
+
+    channelData.forEach(row => {
+
+        transactions +=
+            Number(row.total_transactions || 0);
+
+        fraud +=
+            Number(row.fraud_transactions || 0);
+
+        fraudAmount +=
+            Number(row.fraud_amount || 0);
+
+    });
+
+
+    // --------------------------------------------------------
+    // Quando existe filtro de risco,
+    // usamos a tabela risk para ajustar a análise.
+    // --------------------------------------------------------
+
+    if (riskFilter !== 'ALL') {
+
+        const riskData =
+            DATA.risk.filter(
+                row =>
+                    row.risk_level === riskFilter
+            );
+
+
+        transactions =
+            riskData.reduce(
+                (sum, row) =>
+                    sum +
+                    Number(
+                        row.total_transactions || 0
+                    ),
+                0
+            );
+
+
+        fraud =
+            riskData.reduce(
+                (sum, row) =>
+                    sum +
+                    Number(
+                        row.fraud_transactions || 0
+                    ),
+                0
+            );
+
+
+        fraudAmount =
+            riskData.reduce(
+                (sum, row) =>
+                    sum +
+                    Number(
+                        row.fraud_amount || 0
+                    ),
+                0
+            );
+
+    }
+
+
+    const rate =
+        transactions > 0
+            ? (fraud / transactions) * 100
+            : 0;
+
+
+    document.getElementById(
+        'kpiTransactions'
+    ).textContent =
+        formatNumber(transactions);
+
+
+    document.getElementById(
+        'kpiFraud'
+    ).textContent =
+        formatNumber(fraud);
+
+
+    document.getElementById(
+        'kpiFraudRate'
+    ).textContent =
+        formatPercent(rate);
+
+
+    document.getElementById(
+        'kpiFraudAmount'
+    ).textContent =
+        formatCurrency(fraudAmount);
+
+}
+
+
+// ============================================================
+// GRÁFICO DE TENDÊNCIA
+// ============================================================
+
+function updateDailyChart() {
+
+    const dates =
+        DATA.daily.map(
+            row => row.date
+        );
+
+
+    const rates =
+        DATA.daily.map(
+            row =>
+                Number(
+                    row.fraud_rate_pct || 0
+                )
+        );
+
+
+    const fraud =
+        DATA.daily.map(
+            row =>
+                Number(
+                    row.fraud_transactions || 0
+                )
+        );
+
+
+    const trace = {
+
+        x: dates,
+
+        y: rates,
+
+        customdata: fraud,
+
+        mode: 'lines+markers',
+
+        type: 'scatter',
+
+        hovertemplate:
+            '<b>%{x}</b>' +
+            '<br>Taxa: %{y:.2f}%' +
+            '<br>Fraudes: %{customdata}' +
+            '<extra></extra>'
+
+    };
+
+
+    const layout = {
+
+        margin:
+        {
+            l: 55,
+            r: 30,
+            t: 20,
+            b: 50
+        },
+
+        xaxis:
+        {
+            title: 'Data'
+        },
+
+        yaxis:
+        {
+            title: 'Taxa de fraude (%)'
+        },
+
+        hovermode:
+            'x unified',
+
+        template:
+            'plotly_white'
+
+    };
+
+
+    Plotly.react(
+        'dailyChart',
+        [trace],
+        layout,
+        {responsive: true}
+    );
+
+}
+
+
+// ============================================================
+// GRÁFICO POR CANAL
+// ============================================================
+
+function updateChannelChart(
+    channelFilter
+) {
+
+    let data =
+        DATA.channel;
+
+
+    if (channelFilter !== 'ALL') {
+
+        data =
+            data.filter(
+                row =>
+                    row.channel === channelFilter
+            );
+
+    }
+
+
+    const channels =
+        data.map(
+            row => row.channel
+        );
+
+
+    const fraud =
+        data.map(
+            row =>
+                Number(
+                    row.fraud_transactions || 0
+                )
+        );
+
+
+    const trace = {
+
+        x: channels,
+
+        y: fraud,
+
+        text: fraud,
+
+        textposition:
+            'outside',
+
+        type: 'bar',
+
+        hovertemplate:
+            '<b>%{x}</b>' +
+            '<br>Fraudes: %{y}' +
+            '<extra></extra>'
+
+    };
+
+
+    const layout = {
+
+        margin:
+        {
+            l: 50,
+            r: 30,
+            t: 20,
+            b: 50
+        },
+
+        xaxis:
+        {
+            title: 'Canal'
+        },
+
+        yaxis:
+        {
+            title: 'Fraudes'
+        },
+
+        template:
+            'plotly_white'
+
+    };
+
+
+    Plotly.react(
+        'channelChart',
+        [trace],
+        layout,
+        {responsive: true}
+    );
+
+}
+
+
+// ============================================================
+// GRÁFICO POR RISCO
+// ============================================================
+
+function updateRiskChart(
+    riskFilter
+) {
+
+    let data =
+        DATA.risk;
+
+
+    if (riskFilter !== 'ALL') {
+
+        data =
+            data.filter(
+                row =>
+                    row.risk_level === riskFilter
+            );
+
+    }
+
+
+    const risks =
+        data.map(
+            row =>
+                row.risk_level
+        );
+
+
+    const rates =
+        data.map(
+            row =>
+                Number(
+                    row.fraud_rate_pct || 0
+                )
+        );
+
+
+    const trace = {
+
+        x: risks,
+
+        y: rates,
+
+        text: rates,
+
+        textposition:
+            'outside',
+
+        type: 'bar',
+
+        hovertemplate:
+            '<b>%{x}</b>' +
+            '<br>Taxa: %{y:.2f}%' +
+            '<extra></extra>'
+
+    };
+
+
+    const layout = {
+
+        margin:
+        {
+            l: 50,
+            r: 30,
+            t: 20,
+            b: 50
+        },
+
+        xaxis:
+        {
+            title: 'Nível de risco'
+        },
+
+        yaxis:
+        {
+            title: 'Taxa de fraude (%)'
+        },
+
+        template:
+            'plotly_white'
+
+    };
+
+
+    Plotly.react(
+        'riskChart',
+        [trace],
+        layout,
+        {responsive: true}
+    );
+
+}
+
+
+// ============================================================
+// TABELA DE DETALHES
+// ============================================================
+
+function updateCategoryTable() {
+
+    const tbody =
+        document.getElementById(
+            'categoryTable'
+        );
+
+
+    tbody.innerHTML = '';
+
+
+    const data =
+        [...DATA.category]
+        .sort(
+            (a, b) =>
+                Number(b.fraud_rate_pct || 0)
+                -
+                Number(a.fraud_rate_pct || 0)
+        );
+
+
+    data.forEach(row => {
+
+        const tr =
+            document.createElement('tr');
+
+
+        const category =
+            document.createElement('td');
+
+        category.textContent =
+            row.merchant_category;
+
+
+        const transactions =
+            document.createElement('td');
+
+        transactions.textContent =
+            formatNumber(
+                Number(
+                    row.total_transactions || 0
+                )
+            );
+
+
+        const fraud =
+            document.createElement('td');
+
+        fraud.textContent =
+            formatNumber(
+                Number(
+                    row.fraud_transactions || 0
+                )
+            );
+
+
+        const rate =
+            document.createElement('td');
+
+        rate.textContent =
+            formatPercent(
+                Number(
+                    row.fraud_rate_pct || 0
+                )
+            );
+
+
+        const amount =
+            document.createElement('td');
+
+        amount.textContent =
+            formatCurrency(
+                Number(
+                    row.fraud_amount || 0
+                )
+            );
+
+
+        tr.appendChild(category);
+        tr.appendChild(transactions);
+        tr.appendChild(fraud);
+        tr.appendChild(rate);
+        tr.appendChild(amount);
+
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+// ============================================================
+// ATUALIZAÇÃO GERAL
+// ============================================================
+
+function updateDashboard() {
+
+    const channelFilter =
+        document.getElementById(
+            'channelFilter'
+        ).value;
+
+
+    const riskFilter =
+        document.getElementById(
+            'riskFilter'
+        ).value;
+
+
+    updateKPIs(
+        channelFilter,
+        riskFilter
+    );
+
+
+    updateDailyChart();
+
+
+    updateChannelChart(
+        channelFilter
+    );
+
+
+    updateRiskChart(
+        riskFilter
+    );
+
+
+    updateCategoryTable();
+
+}
+
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+populateFilters();
+
+updateDashboard();
+
+</script>
+
+</body>
+
+</html>
